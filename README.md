@@ -47,6 +47,8 @@ Also developed:
  -  The previously-mentioned remote color graphical display
  -  3D-printed case for VSR Mega-Mini with 0.93" OLED
  -  3D-printed bezel for the remote color graphical display
+
+ FULL REFERENCE MANUAL CAN BE FOUND IN THE DOCUMENTATION DIRECTORY.
  
  ###
  
