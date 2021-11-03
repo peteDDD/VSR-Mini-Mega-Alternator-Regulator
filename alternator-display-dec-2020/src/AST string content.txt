@@ -1,0 +1,48 @@
+AST;,0.00, ,12.44,40.0,60.0,498, ,13.13,1000,15000,11, ,32,33, ,0, ,12.44,31,-99,80
+
+      1  (int) (generatorLrRunTime / (3600UL * 1000UL)),                                // Runtime Hours
+      2  (int) ((generatorLrRunTime / (3600UL * 10UL  )) % 100),                         // Runtime 1/100th
+
+ *    3  float2string(measuredBatVolts, 2),
+ *    4  float2string(measuredAltAmps, 1),
+ *    5  float2string(measuredBatAmps, 1),
+      6  measuredAltWatts, 
+
+        
+      7  float2string(targetBatVolts, 2),
+      8  (int) targetAltAmps,
+      9  targetAltWatts,
+ *   10  chargingState,
+
+ *   11  measuredBatTemp,  // In deg C
+ *   12  measuredAltTemp
+
+
+     13 measuredRPMs,
+        
+ *   14 float2string(measuredAltVolts, 2),
+     16 measuredFETTemp,
+     17 measuredFieldAmps,
+ *   18 ((100*fieldPWMvalue) / FIELD_PWM_MAX) );
+
+ void recvWithEndChar() {
+    static byte dataBufferIndex = 0;
+    // char endChar = '\n'; // in config.h
+    // char incomingbyte;
+   
+    while (Serial.available() > 0 && newData == false) {
+        char incomingbyte = Serial.read();
+        if (incomingbyte != endChar) {
+            dataBuffer[dataBufferIndex] = incomingbyte;
+            dataBufferIndex++;
+            if (dataBufferIndex >= numChars) {
+                dataBufferIndex = numChars - 1;
+            }
+        }
+        else {
+            dataBuffer[dataBufferIndex] = '\0'; // terminate the string
+            dataBufferIndex = 0;
+            return (true);
+        }
+    }
+}

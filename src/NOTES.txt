@@ -1,0 +1,55 @@
+
+started with SmartRegulatorv1.3.1.2020_12StableE_for_10b
+
+1) DONE --  I2c.write(INA226_EXTERNAL_I2C_ADDR, CONFIG_REG, ptr, 2);  
+
+  //DUBLER 061720    adding external INA226
+  #ifdef USE_EXTERNAL_INA226
+  i2c_start(INA226_EXTERNAL_I2C_ADDR << 1 | I2C_WRITE);
+  i2c_write(CONFIG_REG); // Writing the Config reg also 'triggers' a INA226 sample cycle.
+  i2c_write(highByte(INA226_CONFIG));// MSB always goes 1st
+  i2c_write( lowByte(INA226_CONFIG));
+  i2c_stop();
+
+2) DONE -- cpu is AVR  eliminateed #ifdef AVR
+
+3) DONE -- Change INA226 to INA226-bat  and external_INA226 to INA226-alt
+
+4) DONE -- Scrub smartregulator.h to configure to ATmega2560 MINI PRO EMBED
+
+5) DONE -- do we need CHARGE_PUMP_PORT (likely just for bluetooth)
+   system.cpp line 424
+
+
+6) DONE -- what is RVCMessages.h  used in system.h  ... NMEA2000 stuff
+   GET RID OF N2K stuff
+
+7) DONE -- research WDT on ATmega2650
+
+8) DONE -- systemVoltMult in main code.   decide if we need this or not.
+
+9) DONE --decide what functions we want to map to the dip switch.   Set this up in the main code.
+   Perhaps add label on board for DIP switch functions  Add tach mode and engine stop function (activate feature_out_3 pulse after X time in float mode)
+   
+
+10) DONE -- review DIP switch code.  May be able to ifdef in simpler code since pins are now assigned to a single port.
+
+11) DONE -- Look into #ifdef NTC_FET_PORT (not turned on yet... Pin 7 of Mega board)
+
+12) DONE -- Change feature_out_port to support multiple feature out ports -- continue to complete... now has 
+      feature in/out port defines.
+
+13) DONE -- Move serial port for serial display out to a different serial port.  Reserve primary serial port for
+    programming and configuring.  CONFIGURE MULTIPLE SERIAL STREAMS
+
+14) On 3D printed case, engrave terminal names.
+
+15) DONE -- have we eliminated all references to AVR and OSE_ALTERNATOR defines?
+
+16/ DONE -- NOTE BOM R1 and R101 are now 10 ohm
+
+17) DONE --Need to implement a failsafe for lithium batteries in the combiner funtion.
+
+18) Confirm that Lifeline profile agrees with Lifeline specs.
+
+
