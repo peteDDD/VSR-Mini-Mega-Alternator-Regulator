@@ -65,8 +65,8 @@ bool RCP_handler(char *StrPtr);  //$RCP:n -Request to send back CPE entry #N (n=
 bool SCx_handler(char *StrPtr);  //$SCA: - Changes ALTERNATOR parameters in System Configuration table
                                  //$SCT: - Changes TACHOMETER parameters in System Configuration table
                                  //$SCO: - Override features
-                                 //$SCN: - Changes NAME (and PASSWORD)
-                                 //$SCR: - RESTORES System Configuration table (+ Bluetooth) to default
+                                 //  NOT PARSED: $SCN: - Changes NAME (and PASSWORD)  
+                                 //$SCR: - RESTORES System Configuration table to default
 
 void prep_AST(char *buffer);     //AST; -- ALTERNATOR STATUS
 void prep_CPE(char *buffer, tCPS *cpsPtr, int Index); //CPE; -- CHARGE PROFILE ENTRY
@@ -687,7 +687,7 @@ bool send_outbound(bool pushAll)
         else
         { // Doing a Major this time.
             do
-            { // Looking for a high prioity message
+            { // Looking for a high priority message
                 indexMajor++;
                 if (OBPrepers[indexMajor].preper == NULL) // At end of list...
                     indexMajor = 0;

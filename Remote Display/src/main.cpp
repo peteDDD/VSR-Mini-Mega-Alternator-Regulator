@@ -1,59 +1,47 @@
-//  Alternator Amps and Voltage Display
+//  Remote Serial Display for Alternator Controller rev 10c
 //
-//  12/14/20
+//  works with SmartRegulator rev 1.3.1.12
 //
 
 
+#include "Arduino.h"
 #include "main.h"
+
 
 void setup(void)
 {
-  #ifdef DIAGS_PRINTOUTS
-    Serial.begin(9600);
-  #endif
+  Serial.begin(115200);
 
   tft.reset();
   tft.begin(LCD_DRIVER);  
-  tft.setRotation(3);  //was 3
-
-  ina.begin(ina226_address);
-  // Configure INA226
-  ina.configure(INA226_AVERAGES_64, INA226_BUS_CONV_TIME_4156US, INA226_SHUNT_CONV_TIME_4156US, INA226_MODE_SHUNT_BUS_CONT);
-  // Calibrate INA226. // rShunt 200Amp 50mv = 0.00025 ohm, Max excepted current = 200A
-  ina.calibrate(0.00025, 200);
+  tft.setRotation(3);
 
   DrawScreen1();
   screenState = Screen1New;
 
   startTime = millis();
-  sampleTime = startTime;
-  
 } //void setup(void)
-
 
 
 void loop(void)
 {
-   currentTime = millis();
-
-  if((currentTime-sampleTime) > SampleInterval) {
-    getNewData();
-    checkForChanges();
-    sampleTime = millis();
-  }
+  if (getSerialString()) {
+    if (ParseString()) {  // unpack string and SetNewValue
+      if (screenState == Screen2Active) { //Update Screen2 if being shown
+        Screen2Objects[objectNumber]->UpdateDisplayField();
+      }
+    }
+  } //if (getSerialString()) {
 
   //State Machine manages screens
+  currentTime = millis();
   switch (screenState) {
     case Screen1New:
-      /*  Can do something while waiting for the first screen to timeout.  
-          Here is an example...
       if ((currentTime - startTime) > Screen1DelayForRevCode) {
         tft.setTextColor(Screen1TextColor);
         fCR.UpdateDisplayField(); //dislay the alt controller rev code
-        
+        screenState = Screen1Active;
       }
-      */
-     screenState = Screen1Active;
       
     case Screen1Active:
       if ((currentTime - startTime) > Screen1Duration) { // when start screen is complete, set up to load Screen2
@@ -86,39 +74,87 @@ void loop(void)
   } //switch (screenState)
   if ((currentTime - screenToggleStartTime) > ScreenToggleInterval) ToggleScreens();
 
-  } // loop
+} // loop
 
-void getNewData(void) {
-  #ifdef LOWVOLTAGETEST
-   fBV.SetNewValueFloat(roundoff((2.8 * ina.readBusVoltage()),2));
-  #else
-   fBV.SetNewValueFloat(roundoff(ina.readBusVoltage(),2));
-  #endif
-  fAA.SetNewValueFloat(roundoff(ina.readShuntCurrent(),0));
-  #ifdef DIAGS_PRINTOUTS
-   Serial.print("measuredBatVolts = "); Serial.println(fBV.GetNewValueFloat());
-   Serial.print("measuredAltAmps = "); Serial.println(fAA.GetNewValueFloat());
-  #endif
-}
-
-void checkForChanges(void) {
-   for (size_t i = 0; i < sizeof Screen2Objects / sizeof Screen2Objects[0]; i++) {
-    if(Screen2Objects[i]->CheckForChanges()) {  // If the incoming data has changed, 
-      Screen2Objects[i]->MoveFloat2Char();      // Move the new data into m_newValueChar_
-      if(screenState == Screen2Active){
-        Screen2Objects[i]->UpdateDisplayField(); // And, if displaying screen2, update that data on the screen
+bool getSerialString() {
+  static byte dataBufferIndex = 0;
+  static bool storeString;
+ 
+  while (Serial.available() > 0) {
+    char incomingbyte = Serial.read();
+    if (incomingbyte == startChar) {
+      dataBufferIndex = 0;  //Initialize our dataBufferIndex variable
+      storeString = true;
+    }
+    if (storeString) {
+      //Let's check our index here, and abort if we're outside our buffer size
+      //We use our define here so our buffer size can be easily modified
+      if (dataBufferIndex == DATABUFFERSIZE) {
+        //Oops, our index is pointing to an array element outside our buffer.
+        dataBufferIndex = 0;
+        break;
       }
-   }  
-  }
-}
+      if (incomingbyte == endChar) {
+        storeString = false;
+        dataBuffer[dataBufferIndex] = 0; //null terminate the C string
+        //Our data string is complete.
+        return (true);
+      }
+      else {
+        dataBuffer[dataBufferIndex++] = incomingbyte;
+        dataBuffer[dataBufferIndex] = 0; //null terminate the C string
+      }
+    //}
+   // else {
+      
+    }  
+    //fall out the bottom with flag_StringReady still false;
+  }//while (Serial.available() > 0) {
+  return (false);
+}//getSerialString()
+
+
+bool ParseString() {
+  char* valPosition;
+  uint8_t i = 0;
+  //This initializes strtok with our string to tokenize
+  valPosition = strtok(dataBuffer, delimiters);
+
+  while (valPosition != NULL) {
+    if (i == 0) {
+      if (strcmp(valPosition, DISPLAYSTRINGHEADER) != 0) {
+        valPosition = NULL;
+        return false;  //abort because this is not the string we are looking for
+      }
+    }
+    if (i == 1) {
+      objectNumber = atoi(valPosition);
+    }
+    if (i++ == 2) {
+     //stringField = valPosition;
+      // put any incoming data into correct object m_NewValue
+      if (objectNumber == fnCR) { // alt controller rev code
+       // fCR.SetNewValue(stringField);
+       fCR.SetNewValue(valPosition);
+      }
+      else
+        Screen2Objects[objectNumber]->SetNewValue(valPosition);
+    }
+
+    //Here we pass in a NULL value, which tells strtok to continue working with the previous string
+    valPosition = strtok(NULL, delimiters);
+  }//while
+  return true; //complete parsing
+}//ParseString()
+
 
 void DrawScreen1(void) {
   tft.fillScreen(Screen1FillColor);
   tft.setTextColor(Screen1TextColor);
-  fS1L1.SetNewValueChar("Regina Oceani");
-  fS1L2.SetNewValueChar("Alternator Display");
-  fS1L3.SetNewValueChar("rev");
-  fS1L4.SetNewValueChar(Revision);
+  fS1L1.SetNewValue("Regina Oceani");
+  fS1L2.SetNewValue("Genset Alternator");
+  fS1L3.SetNewValue("Controller");
+  fS1L4.SetNewValue(Revision);
   for (size_t i = 0; i < sizeof Screen1Objects / sizeof Screen1Objects[0]; i++) {
     Screen1Objects[i]->UpdateDisplayField();
   }
@@ -155,44 +191,41 @@ void RefreshScreen3(void) {
 
 
 void DrawGraphLines(int Time) {
-  int Height = map(Volts[Time], GraphLowerVoltageScaled, GraphUpperVoltageScaled, GridBottomY, GridYTop);
-  DrawXGrid(); // draw X grid first so these lines stay below voltage bars
-  //  fillRect(top left x,             top left y, width,            height,               color)
-  tft.fillRect(Time + GridLeftX, Height,    GraphVoltBarWidth, DisplayMaxY - Height, VoltColor);
-  DrawYGrid(); // draw Y grid last so these lines are in front of voltage bars
-  
+  int Height = map(Volts[Time], GraphLowerVoltage, GraphUpperVoltage, GridBottomY, GridYZero);
+  //  fillRect(top left x,             top left y, width, height,       color)
+  tft.fillRect(Time + GridBottomLeftX, Height,       1,   240 - Height, VoltColor);
+  DrawYGrid();
+  DrawXGrid();
 
   //now calc and update Amps line
-  Height = map(Amps[Time], GraphLowerAmpValue, GraphUpperAmpValue, GridBottomY, GridYTop);
-  tft.drawPixel(Time + GridLeftX, Height - GraphAmpLineMarginHeight, Screen3FillColor); // create white margin below Amps line
-  tft.fillRect(Time + GridLeftX, Height, GraphAmpLineWidth, GraphAmpLineHeight, AmpColor);
-  tft.drawPixel(Time + GridLeftX, Height + GraphAmpLineHeight + GraphAmpLineMarginHeight, Screen3FillColor); // create white margin above Amps line
-}//DrawGraphLines
+  Height = map(Amps[Time], 0, 125, 228, 28);
+  tft.drawPixel(Time + GridBottomLeftX, Height - 1, Screen3FillColor); // create white margin on Amps line
+  tft.fillRect(Time + GridBottomLeftX, Height, 1, 4, AmpColor);
+  tft.drawPixel(Time + GridBottomLeftX, Height + 5, Screen3FillColor);
+}
 
 
 void DrawYGrid(void) { //draw horizontal grid lines
-  for (int Y = 0; (Y * GridYStep) < DisplayMaxY; Y++ ) {
-    tft.drawLine(GridLeftX, GridBottomY - Y * GridYStep, GridRightX, GridBottomY - Y * GridYStep, Screen3GridLineColor); //x-axis
+  for (int Y = 0; (Y * YGridStep) < DisplayMaxY; Y++ ) {
+    tft.drawLine(GridBottomLeftX, GridBottomY - Y * YGridStep, GridBottomRightX, GridBottomY - Y * YGridStep, Screen3GridLineColor); //x-axis
   }
-}//void DrawYGrid(void) 
+}//DrawGrid
 
 void DrawXGrid(void) { //draw vertical grid lines}
-  int localColor;
-  for (int X = 1; GridLeftX + (((X+1) * GridXStep)) < GridRightX; X++ ){  // start at 1, so 15 minutes
-    if((X % 2) == 0) localColor = Screen3GridLineColor2;
-       else localColor = Screen3GridLineColor;
-    tft.drawLine(GridLeftX + (GridXStep * X), GridBottomY, GridLeftX + (GridXStep * X), UpperY, localColor);
+  for (int X = 1; X < 8; X++ ){  // start at 1, so 15 minutes
+    tft.drawLine(GridBottomLeftX + XGridStep * X, GridBottomY, GridBottomLeftX + XGridStep * X, UpperLeftY, Screen3GridLineColor);
   }
-}//void DrawXGrid(void)
+}
 
 void LabelAxes(void) {
+  // Serial.println("Label Axes");
   tft.setFont(Screen3Font);
-  for (int Y = 0; (Y * GridYStep) < (GridRightX-GridLeftX); Y++ ) {
-    tft.setCursor(RightX - LabelXOffset, BottomY - LabelYOffset - (Y * GridYStep));
+  for (int Y = 0; (Y * YGridStep) < DisplayMaxY; Y++ ) {
+    tft.setCursor(BottomRightX - LabelXOffset, BottomY - LabelYOffset - (Y * YGridStep));
     tft.setTextColor(VoltColor);
     tft.println(GraphLowerVoltageValue + (GraphVoltageStep * Y), 1);
 
-    tft.setCursor(LeftX, BottomY - LabelYOffset - (Y * GridYStep));
+    tft.setCursor(BottomLeftX, BottomY - LabelYOffset - (Y * YGridStep));
     tft.setTextColor(AmpColor);
     tft.println(GraphLowerAmpValue + (GraphAmpStep * Y));
   }
@@ -202,12 +235,9 @@ void LabelAxes(void) {
 void UpdateGraphDataArray(void) {
   //Puts current data into Volt and Amps arrays,
   //If currently displaying Screen3 (the graph), draw the new data
-  if (xAxisTime < (GridRightX - GridLeftX)) {  // Stop if we are on the right edge of the graph
-    Volts[xAxisTime] = uint8_t(10 * (atof(fBV.GetNewValueChar())));
-    Amps[xAxisTime++] = uint8_t(atoi(fAA.GetNewValueChar()));
-    #ifdef DIAGS_PRINTOUTS
-    Serial.print("Amps[xAxisTime] = "); Serial.println(Amps[xAxisTime-1]);
-    #endif
+  if (xAxisTime < (GridBottomRightX - GridBottomLeftX)) {  // Stop if we are on the right edge of the graph
+    Volts[xAxisTime] = uint8_t(10 * (atof(fBV.GetNewValue())));
+    Amps[xAxisTime++] = uint8_t(atoi(fAA.GetNewValue()));
     if (screenState == Screen3Active) {  // if currently displaying graph, draw next bar
       DrawGraphLines(xAxisTime - 1);
     }
@@ -224,51 +254,5 @@ void ToggleScreens(void) {
   if (screenState == Screen2Active) screenState = Screen3New;
 } //void ToggleScreens(void)
 
-char *float2string(float v, uint8_t decimals) {
-// Utility for converting floats to strings with defined number of decimal places
-    const int OUTPUT_BUFS = 1; //7;                              // maximum number of floats in a single sprintf
-    const int MAX_OUTPUT = 6; //13;                              // largest possible output string
-    float absV;
-    static char outputBuffers[OUTPUT_BUFS][MAX_OUTPUT+1];
-    static uint8_t callCount; 
-    char   formatter[] = "%d.%0_d";
 
-   
-    char *pos = outputBuffers[++callCount % OUTPUT_BUFS];   // Select buffer to use this time (Round-robben)
-    //__ return (dtostrf(v,MAX_OUTPUT , decimals, pos));    //<<-- This works GREAT, but is about 1.2K in code size larger then what is here.
-
-    formatter[5] = decimals+'0';                            // create the number for the # of decimal characters we ultimatly want.
-    
-    unsigned int mult = 1;                                  // Calc multplier for fractional portion of number
-    uint8_t multleft = decimals;
-    while(multleft--) {
-      mult *= 10;
-    }
-    
-    absV = v;
-    if (absV<0) 
-        absV *= -1;
- 
-    snprintf(pos, MAX_OUTPUT, formatter,
-             (int)v,                                        // Whole number, with its sign
-             (unsigned int) ((absV * mult)) % mult);      // Fraction, w/o a sign.
- 
-    return pos;
-
-}       
-   
-float roundoff(float num, int precision)
-// Utility to round floats to determined precision
-{
-      int temp=(int )(num*pow(10,precision));
-      int num1=num*pow(10,precision+1);
-      temp*=10;
-      temp+=5;
-      if(num1>=temp)
-              num1+=10;
-      num1/=10;
-      num1*=10;
-      num=num1/pow(10,precision+1);
-      return num;
-}//float roundoff(float num,int precision)
 
