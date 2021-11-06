@@ -431,8 +431,8 @@ void reboot()
 
   blink_LED(LED_RESETTING, LED_RATE_FAST, -1, OUT_LAMP_MIRROR_RESETTING); // Show that something different is going on...
 
-  //ASCII_write("RST;\r\n");
-  //Serial_flush(); // And then make sure the output buffer clears before proceeding with the actual reset.
+  ASCII_write("RST;\r\n");  // tell the USB serial world that we are resetting
+  Serial_flush(); // And then make sure the output buffer clears before proceeding with the actual reset.
 
 #ifdef USE_OLED
   WriteOLEDResetting();
