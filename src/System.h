@@ -30,9 +30,9 @@ typedef enum tModes {unknown   =0, disabled, FAULTED, FAULTED_REDUCED_LOAD, slee
                      bulk_charge=20, acceptance_charge, overcharge_charge,  float_charge=30, forced_float_charge, LIFEPO_FORCED_SHUTDOWN, post_float=36, equalize=38, //RBM_CVCC,
                                                                                                                                 // Alternator / Charger Mode specific (10..39)
                                                                                                                                 //  (BMS uses a subset for chargerMode, keeping order to simplify external ASCII apps.)
-                     discharge=40, recharge, LTStore, holdSOC,                                                                  // BatMon specific  (4x)
-                     stopped  =50, stopping, starting, pre_warming, warming, running,    priming_oil=59,                        // Generator engine specific  (5x)
-                     pending_WM=60, WM_enabled, post_WM                                                                         // Watermaker (Aug load for DC Gen)  (6x)
+                    // discharge=40, recharge, LTStore, holdSOC,                                                                  // BatMon specific  (4x)
+                    // stopped  =50, stopping, starting, pre_warming, warming, running,    priming_oil=59,                        // Generator engine specific  (5x)
+                    // pending_WM=60, WM_enabled, post_WM                                                                         // Watermaker (Aug load for DC Gen)  (6x)
                     } tModes;                                                                                                   // Take care not to change the order of these, some tests use
                                                                                                                                 // things like <= pending_R
                     

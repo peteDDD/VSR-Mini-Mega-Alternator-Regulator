@@ -739,12 +739,11 @@ void prep_AST(char *buffer)
                chargingState,
 
                measuredBatTemp, // In deg C
-               //max(measuredAltTemp, measuredAlt2Temp),
-               measuredAltTemp,
+               measuredAltTemp, //was ... max(measuredAltTemp, measuredAlt2Temp),
 
                measuredRPMs,
 
-               float2string(measuredAltVolts, 2),
+               float2string(measuredAltVolts, 3),
                measuredFETTemp,
                measuredFieldAmps,
                ((100 * fieldPWMvalue) / FIELD_PWM_MAX));
