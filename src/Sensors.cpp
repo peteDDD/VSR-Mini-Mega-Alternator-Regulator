@@ -43,9 +43,9 @@ float measuredBatAmps = 0;  // the regulator is what we are to 'regulate' to, so
 // On the Mini Mega version, we have two INA226 voltage and current sensor chips on the I2C bus, one for the battery and one for the alternator.
 // TODO Add config setting to not use the alternator INA226
 
-bool shuntAltAmpsMeasured = false; //  TODO need to sort this out...accommodating multi charge sources w/external coordination where the Amp Shunt is installed on the Alternator, not the Battery.
-//  usingEXTAmps is a signal that we are using externally supplied amps.  It is used to help assess when this external value times out.
-//  shuntAmpsMeasured is a signal that we have ever been able to measure Amps via the shunt - used to disable amp based decisions in
+bool shuntBatAmpsMeasured = false; 
+bool shuntAltAmpsMeasured = false;
+//  shuntBatAmpsMeasured and shuntAltAmpsMeasured are signals that we have ever been able to measure Amps via the respective shunt - used to disable amp based decisions in
 //  manageAlt() when we are not even able to measure Amps....
 int measuredAltWatts = 0;
 int measuredFETTemp = -99;  // -99 indicated not present.  Temperature of Field FETs, in degrees C.
@@ -240,6 +240,8 @@ bool read_ALT_and_BAT_VoltAmps(void)
 
   if (measuredAltAmps >= USE_AMPS_THRESHOLD) // Set flag if it looks like we are able to read current via local shunt.
     shuntAltAmpsMeasured = true;
+  if (measuredBatAmps >= USE_AMPS_THRESHOLD) // Set flag if it looks like we are able to read current via local shunt.
+    shuntBatAmpsMeasured = true;
 
   return (true);
 } //read_ALT_VoltAmps
@@ -688,7 +690,7 @@ void WriteOLEDDynamicData(void)
   LCDbatVolts.Update(measuredBatVolts);
   LCDaltAmps.Update(measuredAltAmps);
   LCDbatAmps.Update(measuredBatAmps);
-  LCDbatAmps.Update(measuredBatAmps);
+  //LCDbatAmps.Update(measuredBatAmps);  // don't know why this was duplicated...
   
   #ifdef OLED_DISPLAY_DEG_IN_F
   LCDaltTemp.Update(measuredAltTemp * 9 / 5 + 32); // Temp is stored in deg C.  Convert to def F.

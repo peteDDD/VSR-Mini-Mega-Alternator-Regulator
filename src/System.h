@@ -105,15 +105,16 @@ typedef struct  {                                               // System Config
    float        SV_OVERRIDE;                // User forced Voltage Multiplier (1..4) associated with 12v..48v.  Use 0 to enable auto-detect feature.
    uint8_t      CONFIG_LOCKOUT;             // 0=no lockout, 1=no config change, 2=no change, no clearing via FEATURE-IN. 
    int          ENGINE_WARMUP_DURATION;     // Duration in seconds alternator is held off at initial power-on before starting to apply load to engine (Start the RAMP phase)
-   uint8_t      REQURED_SENSORS;            // Flags to indicate the regulator should check if some sensors are not present, ala Alt Temp, battery shunt, etc..
+   uint8_t      REQUIRED_SENSORS;            // Flags to indicate the regulator should check if some sensors are not present, ala Alt Temp, battery shunt, etc..
    
    uint8_t    SCSPLACEHOLDER[15];         // Room for future expansion   
    } tSCS;
                   
    // Bit fields for REQUIRED_SENSORS above and global variable: requiredSensorsFlag
 const uint8_t RQAltTempSen = 0x01;    // Alternator Temp Sensor Required  -- Go to half-power mode if missing
-const uint8_t RQBatTempSen = 0x02;    // Battery Temp Sensor Required     -- Force into float if missing
-const uint8_t RQAmpShunt   = 0x04;    // Amp shunt Required               -- Fault if missing
+const uint8_t RQBatTempSen = 0x02;    // Battery Temp Sensor Required     -- Force into float if missing   
+const uint8_t RQBatAmpShunt= 0x04;    // Battery amp shunt Required    -- Fault if missing
+const uint8_t RQAltAmpShunt= 0x08;    // Alternator amp shunt Required    -- Fault if missing
 const uint8_t RQFault      = 0x80;    // If any of the required sensors are missing, just force a FAULT vs. taking the 'default' action.
 
          

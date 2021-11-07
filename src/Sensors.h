@@ -49,14 +49,15 @@ void WriteOLEDDynamicData(void);
 
 extern bool    updatingBatVAs;
 extern bool    updatingAltVAs;
-extern bool    shuntAltAmpsMeasured; 
+extern bool    shuntAltAmpsMeasured;
+extern bool    shuntBatAmpsMeasured; 
 
 extern float   measuredAltVolts;
 extern float   measuredAltAmps;
 extern int     measuredAltWatts;
 extern float   measuredBatVolts;
 extern float   measuredBatAmps;
-extern float   simCAN_Ext_amps;
+//extern float   simCAN_Ext_amps;
 
 extern int     measuredFETTemp;
 extern int     measuredFieldAmps;

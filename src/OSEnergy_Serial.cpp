@@ -471,7 +471,7 @@ bool SCx_handler(char *StrPtr)
               //       <Alt Amp Cap.>, <System Watt Cap. >, <BAT Amp Shunt Ratio>, <ALT Amp Shunt Ratio>
 
         if (!getBool((ibBuf + 4), &dummy))
-            return (false); // Was 'Favor32v' has been redacted, ignor it.
+            return (false); // Was 'Favor32v', has been redacted, ignore it.
         if (!getByte(NULL, &buffSC.ALT_TEMP_SETPOINT, 15, 120))
             return (false);
         if (!getFloat(NULL, &buffSC.ALT_AMP_DERATE_NORMAL, 0.1, 1.0))
@@ -498,8 +498,8 @@ bool SCx_handler(char *StrPtr)
             buffSC.ALT_IDLE_RPM = 0;
         if (!getInt(NULL, &buffSC.ENGINE_WARMUP_DURATION, 15, 600))
             buffSC.ENGINE_WARMUP_DURATION = 15; //DUBLER MOD 080320 changed to 15 from 60
-        if (!getByte(NULL, &buffSC.REQURED_SENSORS, 0, 255))
-            buffSC.REQURED_SENSORS = 0;
+        if (!getByte(NULL, &buffSC.REQUIRED_SENSORS, 0, 255))
+            buffSC.REQUIRED_SENSORS = 0;
 
         break;
 
@@ -846,7 +846,7 @@ void prep_SCV(char *buffer)
                systemConfig.ALT_IDLE_RPM,
                ((systemConfig.FIELD_TACH_PWM > 0) ? ((100 * systemConfig.FIELD_TACH_PWM) / FIELD_PWM_MAX) : systemConfig.FIELD_TACH_PWM),
                systemConfig.ENGINE_WARMUP_DURATION,
-               systemConfig.REQURED_SENSORS);
+               systemConfig.REQUIRED_SENSORS);
 } //prep_SCV
 
 void prep_SST(char *buffer)

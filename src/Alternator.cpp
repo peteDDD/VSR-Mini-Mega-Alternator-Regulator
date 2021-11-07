@@ -275,7 +275,8 @@ void calculate_ALT_targets(void)
     case forced_float_charge:
         set_VAWL(chargingParms.FLOAT_BAT_V_SETPOINT); // Set the Volts/Amps/Watts limits (See helper function just below)
 
-        if ((chargingParms.LIMIT_FLOAT_AMPS != -1) && (shuntAltAmpsMeasured == true))
+        if ((chargingParms.LIMIT_FLOAT_AMPS != -1) && 
+            ((shuntAltAmpsMeasured == true) || (shuntBatAmpsMeasured == true)))
         {   // User wants active current regulation during FLOAT, AND it seems the shunt it working.
             targetAltAmps = min(targetAltAmps, (chargingParms.LIMIT_FLOAT_AMPS * systemAmpMult)); // Need to override the commonly set target Amps / Watts calcs.
             targetAltWatts = min(targetAltWatts, (chargingParms.FLOAT_BAT_V_SETPOINT * systemVoltMult * targetAltAmps));
@@ -406,8 +407,11 @@ void set_charging_mode(tModes requestedMode)
 
         altModeChanged = millis();
         LEDRepeat = 0;                                 // Force a resetting of the LED blinking pattern
-        if (abs(measuredAltAmps) < USE_AMPS_THRESHOLD) // If we are seeing low battery current (+ or -) ..
-            shuntAltAmpsMeasured = false;              //   .. reset the amp shunt flag, as it may be that the shunt has failed during operation.  (Not a total fail-safe, but this adds a little more reliability)
+        if (abs(measuredAltAmps) < USE_AMPS_THRESHOLD) // If we are seeing low alternator current (+ or -) ..
+            shuntAltAmpsMeasured = false;              //   .. reset the alt amp shunt flag, as it may be that the shunt has failed during operation.  (Not a total fail-safe, but this adds a little more reliability)
+        if (abs(measuredBatAmps) < USE_AMPS_THRESHOLD) // If we are seeing low alternator current (+ or -) ..
+            shuntBatAmpsMeasured = false;              //   .. reset the alt amp shunt flag, as it may be that the shunt has failed during operation.  (Not a total fail-safe, but this adds a little more reliability)
+        
         modeChangeASecs = accumulatedASecs;            // Noting Amp-Seconds at this point in case we have been asked to enter a Float, or post-float mode (one of the exits is AH based)
     }
 } //set_charging_mode
@@ -793,7 +797,7 @@ void manage_ALT()
                                                                              //                                                                      --OR--
 
             ((chargingParms.EXIT_ACPT_AMPS > 0) &&  // Is exiting by Amps enabled, and we have reached that threshold?
-             ((shuntAltAmpsMeasured == true)) &&    //  ... and does it look like we are even measuring Amps?
+             ((shuntAltAmpsMeasured == true) || (shuntBatAmpsMeasured == true)) &&    //  ... and does it look like we are even measuring Amps?
              (atTargVoltage) &&    //  ... Also, make sure the low amps are not because the engine is idling, or perhaps a large external load
              (persistentBatAmps <= (chargingParms.EXIT_ACPT_AMPS * systemAmpMult))) || //  has been applied.  We need to see low amps at the appropriate full voltage!
 
@@ -863,10 +867,13 @@ void manage_ALT()
             PWMError = 0;
         }
 
-        if (((chargingParms.FLOAT_TO_BULK_VOLTS != 0) && (persistentBatVolts <= (chargingParms.FLOAT_TO_BULK_VOLTS * systemVoltMult))) ||
+        if (((chargingParms.FLOAT_TO_BULK_VOLTS != 0) &&
+             (persistentBatVolts <= (chargingParms.FLOAT_TO_BULK_VOLTS * systemVoltMult))) ||
 
-            (((shuntAltAmpsMeasured == true)) && // VBat too low, or we are able to measure Amps AND one of the current triggers tripped
-             (((chargingParms.FLOAT_TO_BULK_AMPS != 0) && (persistentBatAmps <= (chargingParms.FLOAT_TO_BULK_AMPS * systemAmpMult))) ||
+            (((shuntBatAmpsMeasured == true)) && // VBat too low, or we are able to measure Amps AND one of the current triggers tripped
+             
+             (((chargingParms.FLOAT_TO_BULK_AMPS != 0) && 
+               (persistentBatAmps <= (chargingParms.FLOAT_TO_BULK_AMPS * systemAmpMult))) ||
 
               ((chargingParms.FLOAT_TO_BULK_AHS != 0) &&
                ((int)(((accumulatedASecs - modeChangeASecs) / 3600UL) * (ACCUMULATE_SAMPLING_RATE / 1000UL)) <= (chargingParms.FLOAT_TO_BULK_AHS * systemAmpMult))))))
@@ -887,7 +894,7 @@ void manage_ALT()
         fieldPWMvalue = 0; //  Turn off alternator.
         break;
 
-    case post_float: //  During Post-Float the alternator is turned off, but voltage is monitors to see if a large load is placed
+    case post_float: //  During Post-Float the alternator is turned off, but voltage is monitored to see if a large load is placed
                      //  on the system and we need to restart charging.
         chargingStateString = "POST FLOAT ";
 
@@ -900,8 +907,11 @@ void manage_ALT()
             break;
         }
 
-        if (((chargingParms.PF_TO_BULK_VOLTS != 0.0) && (persistentBatVolts < chargingParms.PF_TO_BULK_VOLTS * systemVoltMult)) ||
-            ((chargingParms.PF_TO_BULK_AHS != 0) && ((shuntAltAmpsMeasured == true)) && // Able to measure current - so do Ah check.
+        if (((chargingParms.PF_TO_BULK_VOLTS != 0.0) && 
+             (persistentBatVolts < chargingParms.PF_TO_BULK_VOLTS * systemVoltMult)) ||
+
+            ((chargingParms.PF_TO_BULK_AHS != 0) && 
+             ((shuntAltAmpsMeasured == true)) && // Able to measure current - so do Ah check.
              ((int)(((accumulatedASecs - modeChangeASecs) / 3600UL) * (ACCUMULATE_SAMPLING_RATE / 1000UL)) <= (chargingParms.PF_TO_BULK_AHS * systemAmpMult))))
         {
             //  Do we need to go back into Bulk mode?
@@ -921,7 +931,7 @@ void manage_ALT()
 
         if (((enteredMills - altModeChanged) >= chargingParms.EXIT_EQUAL_DURATION) ||
             ((chargingParms.EXIT_EQUAL_AMPS != 0) &&
-             ((shuntAltAmpsMeasured == true)) && //  ... and does it look like we are even measuring Amps?
+             ((shuntBatAmpsMeasured == true)) && //  ... and does it look like we are even measuring Amps?
              (atTargVoltage) &&                                         //
              (measuredBatAmps <= (chargingParms.EXIT_EQUAL_AMPS * systemAmpMult))))
         {
@@ -991,7 +1001,7 @@ void manage_ALT()
     if ((sendDebugString == true) && (--SDMCounter <= 0))
     {
 
-        snprintf_P(charBuffer, OUTBOUND_BUFF_SIZE, PSTR("DBG;,%d.%03d, ,%d,%d, ,%d,%d,%d, ,%d,%d,%d,%d,%d, ,%d,%d, ,%c,%s,%s, ,%d,%d,%s, ,%d\r\n"),
+        snprintf_P(charBuffer, OUTBOUND_BUFF_SIZE, PSTR("DBG;,%d.%03d, ,%d,%d, ,%d,%d,%d, ,%d,%d,%d,%d,%d, ,%d, ,%c,%s,%s, ,%c,%s,%s, ,%d,%d,%s, ,%d,%d,%d\r\n"),
 
                    (int)(enteredMills / 1000UL), // Timestamp - Seconds
                    (int)(enteredMills % 1000),   // time-stamp - 1000th of seconds
@@ -1011,17 +1021,20 @@ void manage_ALT()
 
                    (int)errorAT,
                    
+                   'B',
+                   float2string(measuredBatVolts, 3),
+                   float2string(measuredBatAmps, 1),
 
                    'A',
                    float2string(measuredAltVolts, 3),
                    float2string(measuredAltAmps, 1),
 
-                   //usingEXTAmps,
                    thresholdPWMvalue,
                    fieldPWMLimit,
                    float2string(otPullbackFactor, 2),
 
                    measuredAltTemp,
+                   measuredBatTemp,
                    checkStampStack() // How much of the stack has been used?
 
         );

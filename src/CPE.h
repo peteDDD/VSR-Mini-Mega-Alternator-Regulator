@@ -91,7 +91,7 @@ typedef struct
 
 #define BAT_TEMP_NOMINAL 25    // Nominal temp which .BAT_TEMP_1C_COMP is based around (in deg-C).
 #define PID_VOLTAGE_SENS 0.020 // When looking at charger mode transitions, if we come within 20mV of the target voltage (for rep 12v battery), consider we have 'met' that voltage condtion. 
-                               //  (This is to help with smaller charging sources driving a LARGE battery, where the charging soruce is not really able to push VBat slightly over the limit..)
+                               //  (This is to help with smaller charging sources driving a LARGE battery, where the charging source is not really able to push VBat slightly over the limit..)
 
 extern const tCPS defaultCPS[MAX_CPES] PROGMEM;
 

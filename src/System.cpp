@@ -429,9 +429,9 @@ bool check_for_faults()
     //----   And at this point we also check to see if some of the REQUIRED sensors are missing.
     //       If so, we set approperte flags to notify the rest of the code that different behaivious is exptected.
     //
-    if ((systemConfig.REQURED_SENSORS & RQAltTempSen) && (measuredAltTemp == -99))
+    if ((systemConfig.REQUIRED_SENSORS & RQAltTempSen) && (measuredAltTemp == -99))
       requiredSensorsFlag |= RQAltTempSen;
-    if ((systemConfig.REQURED_SENSORS & RQBatTempSen) && (measuredBatTemp == -99))
+    if ((systemConfig.REQUIRED_SENSORS & RQBatTempSen) && (measuredBatTemp == -99))
     {
       requiredSensorsFlag |= RQBatTempSen;
       set_charging_mode(forced_float_charge);
@@ -440,9 +440,14 @@ bool check_for_faults()
   case determine_ALT_cap:
   case acceptance_charge:
   case overcharge_charge:
-    if ((systemConfig.REQURED_SENSORS & RQAmpShunt) && (shuntAltAmpsMeasured != true))
+    if ((systemConfig.REQUIRED_SENSORS & RQAltAmpShunt) && (shuntAltAmpsMeasured != true))
     {
-      requiredSensorsFlag |= RQAmpShunt;
+      requiredSensorsFlag |= RQAltAmpShunt;
+      u = FC_SYS_REQIRED_SENSOR;
+    }
+    if ((systemConfig.REQUIRED_SENSORS & RQBatAmpShunt) && (shuntBatAmpsMeasured != true))
+    {
+      requiredSensorsFlag |= RQBatAmpShunt;
       u = FC_SYS_REQIRED_SENSOR;
     }
     // By this time we SHOULD have seen some indication of the amps present..
@@ -480,7 +485,7 @@ bool check_for_faults()
   if (measuredBatTemp > FAULT_BAT_TEMP)
     u = FC_LOOP_BAT_TEMP;
 
-  if ((requiredSensorsFlag != 0) && (systemConfig.REQURED_SENSORS & RQFault))
+  if ((requiredSensorsFlag != 0) && (systemConfig.REQUIRED_SENSORS & RQFault))
     u = FC_SYS_REQIRED_SENSOR; // A required sensor is missing, and we are configured to FAULT out on that condition.
 
   if (u != 0)
