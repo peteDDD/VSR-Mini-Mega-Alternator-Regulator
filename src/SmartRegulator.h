@@ -43,7 +43,7 @@
                                                 // Note the yyy's are to follow the Semantiic Version spec guidelines:  https://semver.org/
                                                 // Make sure to use `-' for any trailing modifiers after the final version number 'number'
 #define REV_FORK "MiniMega v1.0"
-#define DATE_CODE "10/31/21"
+#define DATE_CODE "11/06/21"
 
 #include "Config.h"
 // --------  BOARD SPECIFIC SELECTIONS
