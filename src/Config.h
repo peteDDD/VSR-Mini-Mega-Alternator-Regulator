@@ -49,6 +49,7 @@
 // Display Options - both OLED and SERIAL_DISPLAY can be used
 #define USE_OLED     // to use the Geekcreit SSD1306 I2C OLED which also requires the SoftWire shell to the I2CMaster library
 #define OLED_DISPLAY_DEG_IN_F // display temperatures in Degrees F instead of C (comment out for Deg C)
+#define NO_BAT_TEMP_SENSOR // for LiFePO4, not using battery temp sensor
 
 #define USE_SERIAL_DISPLAY  //output LCD change info on serial line
 #define SERIAL_DISPLAY_PORT Serial1
@@ -85,7 +86,7 @@
 //*           and active will set the system behavior.
 //*********************************************************************************************
 
-//#define FEATURE_IN_EQUALIZE     // Enable FEATURE_IN port to select EQUALIZE mode while regulator is operating
+//#define FEATURE_IN_EQUALIZE // Enable FEATURE_IN port to select EQUALIZE mode while regulator is operating
 //#define FEATURE_IN_EQUALIZE_PORT FEATURE_IN_PORT3
 
 #define ENABLE_FEATURE_IN_SCUBA
@@ -139,19 +140,20 @@
   #define OUT_LAMP_MIRROR_FAULT true  // flash fault codes to LAMP if FEATURE_OUT_LAMP is defined
 
 
-#define FEATURE_OUT_ENGINE_STOP // Enable FEATURE_OUT port to go active when we enter FLOAT mode.  Useful to auto-stop a DC generator when charging has finished.
-  #define FEATURE_OUT_ENGINE_STOP_PORT FEATURE_OUT_PORT3
+//#define FEATURE_OUT_ENGINE_STOP // Enable FEATURE_OUT port to go active when we enter FLOAT mode.  Useful to auto-stop a DC generator when charging has finished.
+  //#define FEATURE_OUT_ENGINE_STOP_PORT FEATURE_OUT_PORT3
 #ifdef FEATURE_OUT_ENGINE_STOP
   #define ENGINE_STOP_PULSE_DURATION 1000 // milliseconds
 #endif
 
-#define FEATURE_OUT_LIFEPO_SHUTDOWN_ALARM // Enable FEATURE_OUT port to go active when Alternator Controller receives an active Force_To_Float Feature-in
-#define FEATURE_OUT_LIFEPO_SHUTDOWN_ALARM_PORT FEATURE_OUT_PORT2
+//#define FEATURE_OUT_LIFEPO_SHUTDOWN_ALARM // Enable FEATURE_OUT port to go active when Alternator Controller receives an active Force_To_Float Feature-in
+//#define FEATURE_OUT_LIFEPO_SHUTDOWN_ALARM_PORT FEATURE_OUT_PORT2
 
-//#define FEATURE_OUT_COMBINER    // Enable FEATURE_OUT port to go active when alternator is in Accept or Float phase.  That is when the main battery had been 'bulked up'.
-  //#define FEATURE_OUT_COMBINER_PORT FEATURE_OUT_PORT1
+#define FEATURE_OUT_COMBINER    // Enable FEATURE_OUT port to go active when alternator is in Accept or Float phase.  That is when the main battery had been 'bulked up'.
+  #define FEATURE_OUT_COMBINER_PORT FEATURE_OUT_PORT1
   // uncomment one of the following two profiles
     #define COMBINER_PROFILE_LIFEPO // for LiFePO4 batteries
+    #define ETERNAL_COMBINER_BATTERY_CHARGER  // if using an external 12V to 12V battery charger (or similar) the combine output will stay active as long as the voltages dictate; no timeout.
     //#define COMBINER_PROFILE_OTHER // for other batteries
 //   Useful for connecting external relay to join 2nd battery, but you need to make sure to set the Capacity DIP switches to reflect the
 //   total capacity of the TWO (or more) batteries when combined.
@@ -161,13 +163,19 @@
 //       note:  all voltages are in 'nominal' 12v form, and will be adjusted at runtime by the systemVoltMult, but not battery temperature...
 #ifdef FEATURE_OUT_COMBINER
   #ifdef COMBINER_PROFILE_LIFEPO // combiner settings for LiFePO4 batteries
-    #define COMBINE_CUTIN_VOLTS 13.6              // Enable to combiner once OUR battery voltage reaches this level.
-    #define COMBINE_HOLD_VOLTS 13.3               // Once enabled remain so on even if voltage sags to this value - a hysteresis to reduce relay chatter/cycling.
-    #define COMBINE_CUTOUT_VOLTS 13.9            // But then disable the combiner once OUR battery voltage reaches this level.
+    #define COMBINE_CUTIN_VOLTS 13.7              // Enable to combiner once OUR battery voltage reaches this level.
+    #define COMBINE_HOLD_VOLTS 13.5               // Once enabled remain so on even if voltage sags to this value - a hysteresis to reduce relay chatter/cycling.
+    #define COMBINE_CUTOUT_VOLTS 14.3 //13.9            // But then disable the combiner once OUR battery voltage reaches this level.
                                                   // This is for cases where we are looking to get a boost from the other battery during
                                                   // bulk phase, but do not want to run the risk of 'back charging' the other battery
                                                   // once voltage raises a bit.   --HOWEVER--
-    #define COMBINE_ACCEPT_CARRYOVER 0.05 * 3600000UL // If we indeed want to continue on and back charge the other battery (say, in the case the other
+    #ifdef ETERNAL_COMBINER_BATTERY_CHARGER 
+      #define COMBINE_ACCEPT_CARRYOVER 24 * 3600000UL  // here set to 24 hours... a time that is highly unlikely to be reached
+                                                    // since we are using a separate 12V to 12V charger, it controls the charge profile of the second battery.
+    #else 
+      #define COMBINE_ACCEPT_CARRYOVER .5 * 3600000UL   // set to some timeout.  leading number is in hours.
+    #endif                                             
+                                                  // If we indeed want to continue on and back charge the other battery (say, in the case the other
                                                   // battery has no other charging source, ala a bow thruster battery), then this is a brute-force
                                                   // carry over into the Accept phase, keep the combiner on for this many hours. (0.75, or 45 minutes)
                                                   // If you want this to actually WORK, then you will need to raise the dropout voltage above to a higher
@@ -187,9 +195,9 @@
                                                   // carry over into the Accept phase, keep the combiner on for this many hours. (0.75, or 45 minutes)
                                                   // If you want this to actually WORK, then you will need to raise the dropout voltage above to a higher
                                                   // threshold, perhaps 15v or so??
-                                                  // See documentation for more details around these parameters and how to configure them..
+                                                 f // See documentation for more details around these parameters and how to configure them..
   #endif
-#endif
+#endif  // FEATURE_OUT_COMBINER
 
 //*************************************************************************************************************************************
 

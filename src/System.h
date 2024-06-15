@@ -100,8 +100,8 @@ typedef struct  {                                               // System Config
 
    bool         FORCED_TM;                  // Has user Forced on Tach-mode via the $SCT command
 
-   uint8_t      CP_INDEX_OVERRIDE;          // User has used issues command to override the DIP switches for the cpIndex.      -1 = use DIP switches.
-   float        BC_MULT_OVERRIDE;           // User has used issues command to override the DIP switches for the bcMultiplier.  0 = use DIP switches.
+   uint8_t      CP_INDEX_OVERRIDE;          // User has issued command to override the DIP switches for the cpIndex.      -1 = use DIP switches.
+   float        BC_MULT_OVERRIDE;           // User has issued command to override the DIP switches for the bcMultiplier.  0 = use DIP switches.
    float        SV_OVERRIDE;                // User forced Voltage Multiplier (1..4) associated with 12v..48v.  Use 0 to enable auto-detect feature.
    uint8_t      CONFIG_LOCKOUT;             // 0=no lockout, 1=no config change, 2=no change, no clearing via FEATURE-IN. 
    int          ENGINE_WARMUP_DURATION;     // Duration in seconds alternator is held off at initial power-on before starting to apply load to engine (Start the RAMP phase)

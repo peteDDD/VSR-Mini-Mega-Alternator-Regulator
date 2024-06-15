@@ -26,9 +26,11 @@
 typedef struct { // Calibration Structure - holds board specific values, set at time of manufacturing.
       bool      LOCKED;            // Calibration already done at Factory, and hence should NEVER be overridden (even master reset)
       float     VBAT_GAIN_ERROR;   // Error of VBat ADC + resister dividers 
-      float     AMP_GAIN_ERROR;
+      float     BAT_AMP_GAIN_ERROR;
+      float     ALT_AMP_GAIN_ERROR;
       int16_t   VBAT_OFFSET;
-      int16_t   AMP_OFFSET;        // Offset error of shunt circuit measured @ 0A 
+      int16_t   BAT_AMP_OFFSET;        // Offset error of shunt circuit measured @ 0A 
+      int16_t   ALT_AMP_OFFSET;        // Offset error of shunt circuit measured @ 0A 
       uint8_t   CALPLACEHOLDER[16];  // Room for future expansion 
       } tCAL;
 

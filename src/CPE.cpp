@@ -50,9 +50,9 @@ const tCPS PROGMEM defaultCPS[MAX_CPES] = {
     {"GEL",      14.1,   60 * 360000UL,   5,     0,     0.0,  0 * 360000UL,    13.5,    -1,    0 * 360000UL,    -10,       0,       12.8,      0 * 360000UL,  0.0,       0,          0.0,    0,    0 * 360000UL, 0,    0.005 * 6,   -9,       -45, 45}, // #5 GEL
     {"FIREFLY",  14.4,   60 * 360000UL,   7,     0,     0.0,  0 * 360000UL,    13.4,    -1,    0 * 360000UL,    -20,       0,       12.0,      0 * 360000UL,  0.0,       0,         14.4,    0,   30 * 360000UL, 3,    0.024,      -20,       -20, 50}, // #6 Firefly (Carbon Foam)
     {"CUSTOM ",  14.4,   60 * 360000UL,  15,    15,     5.3, 30 * 360000UL,    13.1,    -1,    0 * 360000UL,    -10,       0,       12.8,      0 * 360000UL,  0.0,       0,         15.3,   25,   30 * 360000UL, 0,    0.005 * 6,   -9,       -45, 45}, // #7 4-stage HD FLA (& Custom #1 changeable profile)
-    {"LiFePO4 ", 13.8,   10 * 360000UL,  15,     0,     0.0,  0 * 360000UL,    13.6,     0,    0 * 360000UL,      0,     -50,       13.3,      0 * 360000UL,  0.0,       0,          0.0,    0,    0 * 360000UL, 0,    0.000 * 6,    0,         0, 40}  // #8 LiFeP04        (& Custom #2 changeable profile)
+    {"LiFePO4 ", 14.2,   10 * 360000UL,  15,     0,     0.0,  0 * 360000UL,    13.5,     0,    0 * 360000UL,      0,     -50,       13.3,      0 * 360000UL,  0.0,       0,          0.0,    0,    0 * 360000UL, 0,    0.000 * 6,    0,         0, 40}  // #8 LiFeP04        (& Custom #2 changeable profile)
 }; //*** be certain to change the ENUM of the CPE names in CPE.h if the profiles above are changed ***
-
+// 061423 changed LiFePO4 Bulk to 14.2
 
 // Side note:  The Arduino programming environment will place the above populated table into EPROM during compile time.
 //              Upon power on, the Startup code will copy the selected CPE entry (table row) into RAM for use.

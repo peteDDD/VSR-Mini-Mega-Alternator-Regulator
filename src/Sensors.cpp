@@ -66,16 +66,13 @@ bool updatingAltVAs = false;
 //      For now, will simple prime these with default values.
 tCAL ADCCal = {false, // locked   == Let user do calibration if they wish to.
                1.0,   // .VBAT_GAIN_ERROR  == Error of VBat ADC + resister dividers
-               1.0,   // .AMP_GAIN_ERROR
+               1.0,   // .BAT_AMP_GAIN_ERROR  not used in code yet
+               1.0,   // .ALT_AMP_GAIN_ERROR  not used in code yet
                0,     // .VBAT_OFFSET
-               -522}; // TODO Do we need this???   .AMP_OFFSET == ADC Offset error of shunt circuit measured @ 0A
+               0,     // .BAT_AMP_OFFSET == ADC Offset error of shunt circuit measured @ 0A
+               0};    // .ALT_AMP_OFFSET == ADC Offset error of shunt circuit measured @ 0A
 
-//****************************************************************************************************************************
-//i += 522;                                 // VERY BAD!  Original PCB needed to add in a manual offset to accommodate a hardware design error with regard to
-// Default offset is now contained          // how common-mode noise is divided by R22/R24, and causes -14.2A to be displayed when no current
-// in this  'default' ADCCal structure      // is present in amp shunt.
-// IF YOU DO BUILD OPTION OF NOT INSTALLING INA282 LEVEL SHIFTER, CHANGE DEFAULT TO = 0
-//****************************************************************************************************************************
+
 
 //----  Internal veriables and prototypes
 uint32_t sensorsLastSampled; // Used in the main loop to force an sensor (INA226, NTC) sample cycle if alternator isn't running.
@@ -139,6 +136,7 @@ bool initialize_sensors(void)
 
 //------------------------------------------------------------------------------------------------------
 // Calibrate ADCs
+//      DEPRICATED.  Not used with INA226 chips to read voltage and amperage.  Keeping for historical purposes.
 //
 //      Self calibration attempts to calibrate most of the ADCs / DAC to the tolerance of the band-gap reference in the CPU.
 //      User can select this mode during startup if they connect VBat to the +5v connector on the ICSP, and also short out
@@ -285,7 +283,7 @@ int read_Bat_INA226(void)
     i = I2c.receive() << 8;
     i |= I2c.receive();
 
-    measuredBatAmps = (i - ADCCal.AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.BAT_AMP_SHUNT_RATIO;  
+    measuredBatAmps = (i - ADCCal.BAT_AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.BAT_AMP_SHUNT_RATIO;  
     if (systemConfig.REVERSED_BAT_SHUNT == true)
       measuredBatAmps *= -1.0; // If shunt is wired backwards, reverse measured value.
 
@@ -323,7 +321,7 @@ int read_Alt_INA226(void)
     i = I2c.receive() << 8;
     i |= I2c.receive();
 
-    measuredAltAmps = (i - ADCCal.AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.ALT_AMP_SHUNT_RATIO; // Each bit = 2.5uV Shunt Voltage.  Adjust by Shunt ratio. 
+    measuredAltAmps = (i - ADCCal.ALT_AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.ALT_AMP_SHUNT_RATIO; // Each bit = 2.5uV Shunt Voltage.  Adjust by Shunt ratio. 
     if (systemConfig.REVERSED_ALT_SHUNT == true)
       measuredAltAmps *= -1.0; // If shunt is wired backwards, reverse measured value.
 
@@ -387,8 +385,7 @@ void resolve_ADCs_for_Temperatures(void)
 
   if ((measuredBatTemp > NTC_OUT_OF_RANGE_HIGH) || (measuredBatTemp < NTC_OUT_OF_RANGE_LOW))
     measuredBatTemp = -99; // Out of bound A/D reading, indicates something is wrong...
- // if ((measuredAlt2Temp > 120) || (measuredAlt2Temp < -40))
- //   measuredAlt2Temp = -99;
+
 
   if (measuredAltTemp > NTC_SHORTED)
     measuredAltTemp = -100; // If user has shorted out the Alt sensor -
@@ -692,13 +689,19 @@ void WriteOLEDDynamicData(void)
   LCDbatAmps.Update(measuredBatAmps);
   //LCDbatAmps.Update(measuredBatAmps);  // don't know why this was duplicated...
   
+  
   #ifdef OLED_DISPLAY_DEG_IN_F
   LCDaltTemp.Update(measuredAltTemp * 9 / 5 + 32); // Temp is stored in deg C.  Convert to def F.
+  #ifndef NO_BAT_TEMP_SENSOR // then don't write anything to that field of LCD n(or Serial)
   LCDbatTemp.Update(measuredBatTemp * 9 / 5 + 32);
+  #endif // NO_BAT_TEMP_SENSOR
   #else
   LCDaltTemp.Update(measuredAltTemp); // Display in degrees C
+  #ifndef NO_BAT_TEMP_SENSOR // then don't write anything to that field of LCD n(or Serial)
   LCDbatTemp.Update(measuredBatTemp);
-  #endif
+  #endif // NO_BAT_TEMP_SENSOR
+  #endif // OLED_DISPLAY_DEG_IN_F
+
   
   LCDPWM.Update((100 * fieldPWMvalue) / FIELD_PWM_MAX);
 

@@ -315,13 +315,12 @@ void write_CAL_EEPROM(tCAL *calPtr) {
 // Restore All
 //
 //      This function will restore all EEPROM based configuration values (system and all the Charge profile tables
-//      to their default (as compiled) values.  It does this by erasing clearing out each table entry.
+//      to their default (as compiled) values.  It does this by erasing/clearing out each table entry.
 //      Note that this function then will reboot the machine, so it will not return...
 // 
 //
 //------------------------------------------------------------------------------------------------------
 void    restore_all(){
-
      uint8_t b;
 
      write_SCS_EEPROM(NULL);                              // Erase any saved systemConfig structure in the EEPROM

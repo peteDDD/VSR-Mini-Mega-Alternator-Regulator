@@ -70,8 +70,9 @@ tSCS systemConfig = {
     ((6.7 / 2.8) * 1.00),        // .ENGINE_ALT_DRIVE_RATIO      --> Engine pulley diameter / alternator diameter &  fine tuning calibration ratio
     (int)((500 / 0.050) * 1.00), // .BAT_AMP_SHUNT_RATIO **Spec of amp shunt,  500A / 50mV shunt (Link10 default) and % calibrating error
     //                                 CAUTION:  Do NOT exceed 80mV on the AMP Shunt input
-    (int)((300 / 0.075) * 1.00), // .ALT_AMP_SHUNT_RATIO  -->
-    //                                 DUBLER 061720 CHANGED TO 300A/75mV for alternator shunt 
+    (int)((200/ 0.050) * 1.00), // .ALT_AMP_SHUNT_RATIO  -->
+    //                                 DUBLER 061720 CHANGED TO 300A/75mV for alternator shunt (for main engine)
+    //                                      200A/50mV for Genset Alternator Shunt
     //                                 CAUTION:  Do NOT exceed 80mV on the AMP Shunt input
     
     
