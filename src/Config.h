@@ -51,6 +51,24 @@
 #define OLED_DISPLAY_DEG_IN_F // display temperatures in Degrees F instead of C (comment out for Deg C)
 #define NO_BAT_TEMP_SENSOR // for LiFePO4, not using battery temp sensor
 
+// SET ONE OR THE OTHER OF THE FOLLOWING TWO
+#define MY_ENGINE
+//#define MY_GENSET
+
+#ifdef MY_ENGINE
+#define ALT_AMP_LIMIT_SETTING 100 // you set this value
+#define ALT_TEMP_SETTING 96 // 96C is 205 deg F
+#else
+#ifdef MY_GENSET
+#define ALT_AMP_LIMIT_SETTING 125  // you set this value
+#define ALT_TEMP_SETTING 96 // 96C is 205 deg F
+#else
+#define ALT_AMP_LIMIT_SETTING 100  // default setting
+#define ALT_TEMP_SETTING 90 // 90 C is 195F
+#endif // MY_GENSET
+#endif // MY_ENGINE
+
+
 #define USE_SERIAL_DISPLAY  //output LCD change info on serial line
 #define SERIAL_DISPLAY_PORT Serial1
 #define SERIAL_DISPLAY_BAUD 9600UL

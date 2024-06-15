@@ -32,6 +32,7 @@
 #include "System.h"
 #include "LED.h"
 #include "Alternator.h"
+#include "Config.h"
 
 //
 //------------------------------------------------------------------------------------------------------
@@ -52,16 +53,19 @@ char const firmwareVersion[] = FIRMWARE_VERSION; // Sent out with SST; status st
 tSCS systemConfig = {
     false, // .REVERSED_BAT_SHUNT          --> Assume shunt is not reversed.
     false, // .REVERSED_ALT_SHUNT          --> Assume shunt is not reversed.
-    90,    // .ALT_TEMP_SETPOINT           --> Default Alternator temp - 90c  (Approx 195f)
+    ALT_TEMP_SETTING,    // --> moved this setting to Config.h
+    //90,    // .ALT_TEMP_SETPOINT           --> Default Alternator temp - 90c  (Approx 195f)
     1.00,  // .ALT_AMP_DERATE_NORMAL       --> Normal cap Alternator at 100% of demonstrated max Amp capability,
     0.75,  // .ALT_AMP_DERATE_SMALL_MODE   --> Unless user has selected Small Alt Mode via DIP switch, then do 75% of its capability
     0.50,  // .ALT_AMP_DERATE_HALF_POWER   --> User has shorted out the Alternator Temp NTC probe, indicating they want
            //                                    to do 1/2 power mode.
     -1,    // .ALT_PULLBACK_FACTOR         --> Used to pull-back Field Drive as we move towards Idle.
     0,     // .ALT_IDLE_RPM                --> Used to pull-back Field Drive as we move towards idle.  
-    //                                          Set = 0 causes RPMs to be determined automatically during operation.
-   //!! NOTE THAT I SET THIS TO 125 AMPS instead of 0 for my genset
-    125,   // .ALT_AMPS_LIMIT --> The regulator may OPTIONALLY be configured to limit the size of the alternator output
+    //                                         Set = 0 causes RPMs to be determined automatically during operation.
+  
+    ALT_AMP_LIMIT_SETTING,   // moved this setting to Config.h
+                            // .ALT_AMPS_LIMIT --> The regulator may OPTIONALLY be configured to limit the size of the alternator output
+   //  125,   // .ALT_AMPS_LIMIT --> The regulator may OPTIONALLY be configured to limit the size of the alternator output
     //                               Set = 0 to disable Amps capping.  
     //                               Set = -1 to auto-size Alternator during Ramp. (required Shunt on Alt, not Bat)
     0,     // .ALT_WATTS_LIMIT  --> The regulator may OPTIONALLY be configured to limit the load placed on the engine via the Alternator.
