@@ -470,12 +470,24 @@ void WriteOLEDTitlePage(void)
   // output version/fork and then the static parts of the LCD display
   oled.clear();
   oled.setFont(Callibri15);
-  oled.setCursor(10, 1);
-  oled.println("VSR MINI MEGA");
-  oled.setCursor(18, 3);
-  oled.println(REV_FORK);
-  oled.setCursor(30,6);
-  oled.println(DATE_CODE);
+  //oled.setCursor(10, 1);
+  OLEDPrintlnCentered("VSR MINI MEGA",1);
+  //oled.setCursor(18, 3);
+ // oled.println(REV_FORK);
+ OLEDPrintlnCentered(REV_FORK, 3);
+  //oled.setCursor(30,6);
+ //oled.println(DATE_CODE);
+ OLEDPrintlnCentered(DATE_CODE, 6);
+  delay(2000);
+}
+
+void WriteOLEDSecondPage(void)
+{
+  oled.clear();
+  oled.setFont(Callibri15);
+  OLEDPrintlnCentered(BOAT_NAME, 1);
+  OLEDPrintlnCentered(VSR_NAME, 3);
+  
   delay(2000);
 }
   
@@ -483,29 +495,35 @@ void WriteOLEDBatteryType(void)
 {
   oled.clear();
   oled.setFont(Callibri15);
-  oled.setCursor(20, 0);
-  oled.println("Battery Type");
-  oled.setCursor(30, 2);
-  oled.println(chargingParms.BATTERY_TYPE);
+  //oled.setCursor(20, 0);
+  //oled.println("Battery Type");
+  OLEDPrintlnCentered("Battery Type", 0);
+  //oled.setCursor(30, 2);
+  //oled.println(chargingParms.BATTERY_TYPE);
+  OLEDPrintlnCentered(chargingParms.BATTERY_TYPE, 2);
 
-  oled.setCursor(20, 5);
+  //oled.setCursor(20, 5);
   switch(int(systemAmpMult *2 )) // systemAmpMult scales to 500AH, so have to multiply by 2
                                //   to get integer steps for the four levels of bat bank size
   {
     case 1:
-      oled.println("< 250AH");
+      //oled.println("< 250AH");
+      OLEDPrintlnCentered("< 250AH", 5);
       break;
 
     case 2:
-      oled.println("250 - 500AH");
+      //oled.println("250 - 500AH");
+      OLEDPrintlnCentered("250 - 500AH", 5);
       break;
     
     case 3:
-      oled.println("500AH - 750AH");
+      //oled.println("500AH - 750AH");
+      OLEDPrintlnCentered("500AH - 750AH", 5);
       break;
 
     case 4:
-      oled.println("> 750AH");
+      //oled.println("> 750AH");
+      OLEDPrintlnCentered("> 750AH", 5);
       break;
   }
   
@@ -518,6 +536,7 @@ void WriteOLEDDIPSettings(void)
   oled.setFont(Callibri15);
   oled.setCursor(8, 1);
   oled.print("SMALL ALT:  ");
+  
   if(smallAltMode) oled.println("YES");
   else oled.println("NO");
   
@@ -532,10 +551,12 @@ void WriteOLEDFactoryReset(void)
 {
   oled.clear();
   oled.setFont(Callibri15);
-  oled.setCursor(30, 1);
-  oled.println("FACTORY");
-  oled.setCursor(30, 4);
-  oled.println(" RESET");
+  //oled.setCursor(30, 1);
+  //oled.println("FACTORY");
+  OLEDPrintlnCentered("FACTORY", 1);
+  //oled.setCursor(30, 4);
+  //oled.println(" RESET");
+  OLEDPrintlnCentered("RESET", 4);
   delay(2000);
 }
 
@@ -553,8 +574,8 @@ void WriteOLEDNonResetFault(void)
   // output version/fork and then the static parts of the LCD display
   oled.clear();
   oled.setFont(Callibri15);
-  oled.setCursor(15, 1);
-  oled.println("NON-RESETTING");
+  //oled.println("NON-RESETTING");
+  OLEDPrintlnCentered("NON-RESETTING", 1);
   WriteOLEDFaultString();
 }
 
@@ -570,82 +591,103 @@ void WriteOLEDFault(void)
 
 void WriteOLEDFaultString(void)
 {
-  oled.setCursor(35, 3);
-  oled.print("FAULT  ");
-  oled.println(faultCode);
-  oled.setCursor(25,5);
+  //oled.setCursor(35, 3);
+  OLEDPrintlnCentered("FAULT  ", 3);
+  char faultCodeStr[10];
+  sprintf(faultCodeStr, "%u", faultCode);
+  OLEDPrintlnCentered(faultCodeStr, 3);
+  
+  //oled.setCursor(25,5);
   switch(faultCode & 0x7FFFU) // mask out reset bit 0x8000
   {   // fault code list is in System.h
     case 12:
-      oled.println("Battery Temp");
+      //oled.println("Battery Temp");
+      OLEDPrintlnCentered("Battery Temp", 5);
       break;
 
     case 13:
-      oled.println("Battery Volts");
+      //oled.println("BatteryVolts");
+      OLEDPrintlnCentered("BatteryVolts", 5);
       break;
     
     case 14:
-      oled.println("Bat Low Volts");
+      //oled.println("Bat Low Volts");
+      OLEDPrintlnCentered("Bat Low Volts", 5);
       break;
 
     case 21:
-      oled.println("  Alt Temp   ");
+      //oled.println("  Alt Temp   ");
+      OLEDPrintlnCentered("  Alt Temp   ", 5);
       break;
         
     case 22:
-      oled.println("  Alt RPMs   ");
+      //oled.println("  Alt RPMs   ");
+      OLEDPrintlnCentered("  Alt RPMs   ", 5);
       break;
     
     case 24:
-      oled.println("Alt Temp Ramp");
+      //oled.println("Alt Temp Ramp");
+      OLEDPrintlnCentered("Alt Temp Ramp", 5);
       break;
 
     case 31:
-      oled.println("UnSup Chrg St ");
+      //oled.println("UnSup Chrg St ");
+      OLEDPrintlnCentered("UnSup Chrg St ", 5);
       break;
 
     case 32:
-      oled.println("UnSup Chrg St1");
+      //oled.println("UnSup Chrg St1");
+      OLEDPrintlnCentered("UnSup Chrg St1", 5);
       break;
     
     case 33:
-      oled.println("UnSup CPIndex ");
+      //oled.println("UnSup CPIndex ");
+      OLEDPrintlnCentered("UnSup CPIndex ", 5);
       break;
     
     case 34:
-      oled.println("UnSup CPIndex1");
+      //oled.println("UnSup CPIndex1");
+      OLEDPrintlnCentered("UnSup CPIndex1", 5);
       break;
     
     case 35:
-      oled.println("UnSup CPI St  ");
+      //oled.println("UnSup CPI St  ");
+      OLEDPrintlnCentered("UnSup CPI St  ", 5);
       break;
     
     case 36:
-      oled.println("UnSup CPI St1 ");
+      //oled.println("UnSup CPI St1 ");
+      OLEDPrintlnCentered("UnSup CPI St1 ", 5);
       break;
   
     case 41:
-      oled.println("   FET Temp   ");
+      //oled.println("   FET Temp   ");
+      OLEDPrintlnCentered("   FET Temp   ", 5);
       break;
     
     case 42:
-      oled.println("Missing Sensor");
+      //oled.println("Missing Sensor");
+      OLEDPrintlnCentered("Missing Sensor", 5);
       break;
     
     case 72:
-      oled.println("ADC Read Error");
+      //oled.println("ADC Read Error");
+      OLEDPrintlnCentered("ADC Read Error", 5);
       break;
     
     case 100:
-      oled.println(" I2C 1 Error  ");
+      //oled.println(" I2C 1 Error  ");
+      OLEDPrintlnCentered(" I2C 1 Error  ", 5);
       break;
     
     case 200:
-      oled.println(" I2C 2 Error  ");
+      //oled.println(" I2C 2 Error  ");
+      OLEDPrintlnCentered(" I2C 2 Error  ", 5);
       break;
 
     default:
-      oled.println("Unknown Error ");
+      //oled.println("Unknown Error ");
+      OLEDPrintlnCentered("Unknown Error ", 5);
       break;
   }
 

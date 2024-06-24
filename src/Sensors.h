@@ -35,6 +35,7 @@ typedef struct { // Calibration Structure - holds board specific values, set at 
       } tCAL;
 
 void WriteOLEDTitlePage(void);
+void WriteOLEDSecondPage(void);
 void WriteOLEDBatteryType(void);
 void WriteOLEDDIPSettings(void);
 void WriteOLEDFactoryReset(void);

@@ -251,6 +251,7 @@ void setup()
 
 #ifdef USE_OLED 
   WriteOLEDTitlePage();
+  WriteOLEDSecondPage();
   WriteOLEDBatteryType();
   wdt_reset(); // pat the watchdog timer
   WriteOLEDDIPSettings();

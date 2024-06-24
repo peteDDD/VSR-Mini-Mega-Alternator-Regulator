@@ -51,15 +51,18 @@
 #define OLED_DISPLAY_DEG_IN_F // display temperatures in Degrees F instead of C (comment out for Deg C)
 #define NO_BAT_TEMP_SENSOR // for LiFePO4, not using battery temp sensor
 
+#define BOAT_NAME "Regina Oceani"
 // SET ONE OR THE OTHER OF THE FOLLOWING TWO
-#define MY_ENGINE
-//#define MY_GENSET
+//#define MY_ENGINE
+#define MY_GENSET
 
 #ifdef MY_ENGINE
+#define VSR_NAME "ENGINE"
 #define ALT_AMP_LIMIT_SETTING 100 // you set this value
 #define ALT_TEMP_SETTING 96 // 96C is 205 deg F
 #else
 #ifdef MY_GENSET
+#define VSR_NAME "GENSET"
 #define ALT_AMP_LIMIT_SETTING 125  // you set this value
 #define ALT_TEMP_SETTING 96 // 96C is 205 deg F
 #else

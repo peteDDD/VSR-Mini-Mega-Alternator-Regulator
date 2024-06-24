@@ -269,4 +269,11 @@ void LCDfield<T>::Update(T newValue) {
 }//void LCDfield<T>::Update(T newValue) 
 
 
+void OLEDPrintlnCentered(const char *text, uint8_t row = 0)
+{
+  size_t size = oled.strWidth(text);
+  oled.setCursor((oled.displayWidth()-size)/2, row);
+  oled.println(text);
+}
+
 #endif
