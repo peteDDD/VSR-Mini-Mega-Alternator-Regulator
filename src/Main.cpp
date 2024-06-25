@@ -74,6 +74,7 @@
 #include "Sensors.h"
 #include "LED.h"
 #include "BMS_SERIAL.h"
+#include "I2C_OLED.h"
 
 /***************************************************************************************
 ****************************************************************************************
@@ -252,10 +253,14 @@ void setup()
 #ifdef USE_OLED 
   WriteOLEDTitlePage();
   WriteOLEDSecondPage();
-  WriteOLEDBatteryType();
   wdt_reset(); // pat the watchdog timer
+  WriteOLEDBatteryType();
   WriteOLEDDIPSettings();
-  WriteOLEDDataScreenStaticData();
+  WriteOLEDFeatureAssignments();
+  wdt_reset(); 
+  WriteOLEDSerialPortAssignments();
+ //WriteOLEDDataScreenStaticData();
+  wdt_reset(); // pat the watchdog timer
 #endif
 } // End of the Setup() function.
 

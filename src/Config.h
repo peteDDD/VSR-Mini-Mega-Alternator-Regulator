@@ -48,6 +48,8 @@
 // You can turn off the following features by commenting out the #define statements
 // Display Options - both OLED and SERIAL_DISPLAY can be used
 #define USE_OLED     // to use the Geekcreit SSD1306 I2C OLED which also requires the SoftWire shell to the I2CMaster library
+#define OLED_PX_WIDTH 128
+#define OLED_PX_HEIGHT 64
 #define TIME_BETWEEN_OLED_SCREENS 2000 // ms
 #define OLED_DISPLAY_DEG_IN_F // display temperatures in Degrees F instead of C (comment out for Deg C)
 #define NO_BAT_TEMP_SENSOR // for LiFePO4, not using battery temp sensor

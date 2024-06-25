@@ -26,8 +26,10 @@
 extern SSD1306AsciiWire oled;
 
 void OLEDPrintlnCentered(const char *text, uint8_t row = 0);
-void OLEDWriteFeatureAssignments (void);
-void OLEDWriteSerialPortAssignments(void);
+void OLEDprintWrappedText(const String &text1, const String &text2);
+void OLEDprintWrappedTextBreakAtSpace(const String &text1, const String &text2);
+void WriteOLEDFeatureAssignments (void);
+void WriteOLEDSerialPortAssignments(void);
 float roundoff(float num,int precision);
 
 // LCD SCREEN FORMAT CONSTANTS AND VARIABLES

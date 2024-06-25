@@ -142,8 +142,79 @@ String BuildOutLampFeatures(const char *FeatureInString)
     return result;
 }
 
-void OLEDWriteFeatureAssignments(void)
+
+void OLEDprintWrappedText(const String &text1, const String &text2)
 {
+    // function to combine two strings and print them on the OLED in a wrapped text
+    String line = "";
+    String fullText = text1 + text2;
+    bool firstLine = true;
+
+    for (size_t i = 0; i < fullText.length(); i++)
+    {
+        if (oled.strWidth(line.c_str()) > OLED_PX_WIDTH)
+        {
+            oled.println(line);
+            line = "";
+            if (firstLine)
+            {
+                line += ' '; // Indent the second line by one character
+                firstLine = false;
+            }
+        }
+        line += fullText[i];
+    }
+    if (line.length() > 0)
+    {
+        oled.println(line);
+    }
+    oled.setCursor(0, oled.row()); // Move back to the beginning of the row
+}
+
+void OLEDprintWrappedTextBreakAtSpace(const String &text1, const String &text2)
+{
+    // function to combine two strings and print them on the OLED in a wrapped text
+    // but break only at spaces
+    String line = "";
+    String fullText = text1 + text2;
+    bool firstLine = true;
+    size_t lastBlank = 0;
+
+    for (size_t i = 0; i < fullText.length(); i++)
+    {
+        line += fullText[i];
+        if (fullText[i] == ' ')
+        {
+            lastBlank = i;
+        }
+
+        if (oled.strWidth(line.c_str()) > OLED_PX_WIDTH)
+        {
+            if (lastBlank > 0)
+            {
+                line = line.substring(0, lastBlank);
+                i = lastBlank; // Move the index to the last blank character
+                lastBlank = 0; // Reset lastBlank
+            }
+            oled.println(line);
+            line = "";
+            if (firstLine)
+            {
+                line += ' '; // Indent the second line by one character
+                firstLine = false;
+            }
+        }
+    }
+    if (line.length() > 0)
+    {
+        oled.println(line);
+    }
+    oled.setCursor(0, oled.row()); // Move back to the beginning of the row
+}
+
+void WriteOLEDFeatureAssignments(void)
+{
+    /*
     const char *FeatureIn1String = "None";
     const char *FeatureIn2String = "None";
     const char *FeatureIn3String = "None";
@@ -151,6 +222,15 @@ void OLEDWriteFeatureAssignments(void)
     const char *FeatureOut1String = "None";
     const char *FeatureOut2String = "None";
     const char *FeatureOut3String = "None";
+*/
+
+    String FeatureIn1String = "None";
+    String FeatureIn2String = "None";
+    String FeatureIn3String = "None";
+
+    String FeatureOut1String = "None";
+    String FeatureOut2String = "None";
+    String FeatureOut3String = "None";
 
 #ifdef FEATURE_IN_EQUALIZE
     {
@@ -296,18 +376,19 @@ void OLEDWriteFeatureAssignments(void)
         String AcceptCarryover = String(COMBINE_ACCEPT_CARRYOVER / 3600000UL);
 
         // Build Combiner String
-        String combinerString = String("Combiner") + "/" + String(COMBINE_CUTIN_VOLTS) + "/" + String(COMBINE_HOLD_VOLTS) + "/" + String(COMBINE_CUTOUT_VOLTS);
+        String combinerString = String("Combiner ") + String(COMBINE_CUTIN_VOLTS) + "/"  + String(COMBINE_HOLD_VOLTS) + "/" + String(COMBINE_CUTOUT_VOLTS);
+        Serial.println("COMBINER STRING = " + combinerString);
 
-                switch (FEATURE_OUT_COMBINER_PORT)
+        switch (FEATURE_OUT_COMBINER_PORT)
         {
         case FEATURE_OUT_PORT1:
-            FeatureOut1String = combinerString.c_str();
+            FeatureOut1String = combinerString;      
             break;
         case FEATURE_OUT_PORT2:
-            FeatureOut2String = combinerString.c_str();
+            FeatureOut2String = combinerString;
             break;
         case FEATURE_OUT_PORT3:
-            FeatureOut3String = combinerString.c_str();
+            FeatureOut3String = combinerString;
             break;
         }
     }
@@ -315,26 +396,20 @@ void OLEDWriteFeatureAssignments(void)
     oled.clear();
     oled.setFont(Callibri15);
     oled.setCursor(0, 0);
-    oled.print("FeatureIn1: ");
-    oled.println(FeatureIn1String);
-    oled.print("FeatureIn2: ");
-    oled.println(FeatureIn2String);
-    oled.print("FeatureIn3: ");
-    oled.println(FeatureIn3String);
+    OLEDprintWrappedTextBreakAtSpace("FIn1: ", FeatureIn1String);
+    OLEDprintWrappedTextBreakAtSpace("FIn2: ", FeatureIn2String);
+    OLEDprintWrappedTextBreakAtSpace("FIn3: ", FeatureIn3String);
     delay(TIME_BETWEEN_OLED_SCREENS);
 
     oled.clear();
     oled.setCursor(0, 0);
-    oled.print("FeatureOut1: ");
-    oled.println(FeatureOut1String);
-    oled.print("FeatureOut2: ");
-    oled.println(FeatureOut2String);
-    oled.print("FeatureOut3: ");
-    oled.println(FeatureOut3String);
+    OLEDprintWrappedTextBreakAtSpace("FOut1: ", FeatureOut1String); 
+    OLEDprintWrappedTextBreakAtSpace("FOut2: ", FeatureOut2String); 
+    OLEDprintWrappedTextBreakAtSpace("FOut3: ", FeatureOut3String); 
     delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
-void OLEDWriteSerialPortAssignments(void)
+void WriteOLEDSerialPortAssignments(void)
 {
     const char *SerialPort1String = "None";
     const char *SerialPort2String = "None";
