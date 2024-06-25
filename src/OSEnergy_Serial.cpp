@@ -496,8 +496,9 @@ bool SCx_handler(char *StrPtr)
             return (false);
         if (!getInt(NULL, &buffSC.ALT_IDLE_RPM, 0, 1500))
             buffSC.ALT_IDLE_RPM = 0;
-        if (!getInt(NULL, &buffSC.ENGINE_WARMUP_DURATION, 15, 600))
-            buffSC.ENGINE_WARMUP_DURATION = 15; //DUBLER MOD 080320 changed to 15 from 60
+        if (!getInt(NULL, &buffSC.ENGINE_WARMUP_DURATION, 0, 600))  // 062524 set lower limit from 15 to 0
+            buffSC.ENGINE_WARMUP_DURATION = 5; //DUBLER MOD 080320 changed to 15 from 60 
+                                               //  then to 5 because of time used up by displaying settings
         if (!getByte(NULL, &buffSC.REQUIRED_SENSORS, 0, 255))
             buffSC.REQUIRED_SENSORS = 0;
 

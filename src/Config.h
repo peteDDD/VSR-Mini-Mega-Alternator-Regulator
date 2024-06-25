@@ -77,10 +77,12 @@
 
 #define USE_SERIAL_DISPLAY  //output LCD change info on serial line
 #define SERIAL_DISPLAY_PORT Serial1
+#define SERIAL_DISPLAY_PORT_NUM 1  // 1 for Serial1, 2 for Serial2
 #define SERIAL_DISPLAY_BAUD 9600UL
 
 #define USE_BMS_SERIAL_IN  // Serial input for BMS commands 
 #define BMS_SERIAL_PORT Serial2
+#define BMS_SERIAL_PORT_NUM 2  // 1 for Serial1, 2 for Serial2
 #define BMS_SERIAL_BAUD 9600UL
 
 //Note: for faster bench testing, turn on BENCHTEST in SmartRegulator.h

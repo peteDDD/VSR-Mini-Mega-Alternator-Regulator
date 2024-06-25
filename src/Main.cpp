@@ -256,10 +256,11 @@ void setup()
   wdt_reset(); // pat the watchdog timer
   WriteOLEDBatteryType();
   WriteOLEDDIPSettings();
+  wdt_reset(); // pat the watchdog timer
   WriteOLEDFeatureAssignments();
   wdt_reset(); 
   WriteOLEDSerialPortAssignments();
- //WriteOLEDDataScreenStaticData();
+  WriteOLEDDataScreenStaticData();
   wdt_reset(); // pat the watchdog timer
 #endif
 } // End of the Setup() function.

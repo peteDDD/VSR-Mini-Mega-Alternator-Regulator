@@ -142,7 +142,6 @@ String BuildOutLampFeatures(const char *FeatureInString)
     return result;
 }
 
-
 void OLEDprintWrappedText(const String &text1, const String &text2)
 {
     // function to combine two strings and print them on the OLED in a wrapped text
@@ -376,13 +375,13 @@ void WriteOLEDFeatureAssignments(void)
         String AcceptCarryover = String(COMBINE_ACCEPT_CARRYOVER / 3600000UL);
 
         // Build Combiner String
-        String combinerString = String("Combiner ") + String(COMBINE_CUTIN_VOLTS) + "/"  + String(COMBINE_HOLD_VOLTS) + "/" + String(COMBINE_CUTOUT_VOLTS);
+        String combinerString = String("Combiner ") + String(COMBINE_CUTIN_VOLTS) + "/" + String(COMBINE_HOLD_VOLTS) + "/" + String(COMBINE_CUTOUT_VOLTS);
         Serial.println("COMBINER STRING = " + combinerString);
 
         switch (FEATURE_OUT_COMBINER_PORT)
         {
         case FEATURE_OUT_PORT1:
-            FeatureOut1String = combinerString;      
+            FeatureOut1String = combinerString;
             break;
         case FEATURE_OUT_PORT2:
             FeatureOut2String = combinerString;
@@ -403,42 +402,36 @@ void WriteOLEDFeatureAssignments(void)
 
     oled.clear();
     oled.setCursor(0, 0);
-    OLEDprintWrappedTextBreakAtSpace("FOut1: ", FeatureOut1String); 
-    OLEDprintWrappedTextBreakAtSpace("FOut2: ", FeatureOut2String); 
-    OLEDprintWrappedTextBreakAtSpace("FOut3: ", FeatureOut3String); 
+    OLEDprintWrappedTextBreakAtSpace("FOut1: ", FeatureOut1String);
+    OLEDprintWrappedTextBreakAtSpace("FOut2: ", FeatureOut2String);
+    OLEDprintWrappedTextBreakAtSpace("FOut3: ", FeatureOut3String);
     delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
 void WriteOLEDSerialPortAssignments(void)
 {
-    const char *SerialPort1String = "None";
-    const char *SerialPort2String = "None";
+    String SerialPort1String = "None";
+    String SerialPort2String = "None";
 
 #ifdef USE_SERIAL_DISPLAY
-    {
-        if (SERIAL_DISPLAY_PORT == Serial1)
-        {
-            SerialPort1String = "Display";
-        }
-        if (SERIAL_DISPLAY_PORT == Serial2)
-        {
-            SerialPort2String = "Display";
-        }
-    }
+{
+    #if SERIAL_DISPLAY_PORT_NUM == 1
+        SerialPort1String = "Display";
+    #elif SERIAL_DISPLAY_PORT_NUM == 2
+        SerialPort2String = "Display";
+    #endif
+}
+#endif
+#ifdef USE_BMS_SERIAL_IN
+{
+    #if BMS_SERIAL_PORT_NUM == 1
+        SerialPort1String = "BMS";
+    #elif BMS_SERIAL_PORT_NUM == 2
+        SerialPort2String = "BMS";
+    #endif
+}
 #endif
 
-#ifdef USE_BMS_SERIAL_IN
-    {
-        if (BMS_SERIAL_PORT == Serial1)
-        {
-            SerialPort1String = "BMS";
-        }
-        if (BMS_SERIAL_PORT == Serial2)
-        {
-            SerialPort2String = "BMS";
-        }
-    }
-#endif
     oled.clear();
     oled.setFont(Callibri15);
     oled.setCursor(0, 0);

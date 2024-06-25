@@ -93,8 +93,9 @@ tSCS systemConfig = {
     #ifdef BENCHTEST
     2,   // .ENGINE_WARMUP_DURATION  **Shortened for bench testing**
     #else
-    15,  // .ENGINE_WARMUP_DURATION  --> Allow engine X seconds to start and 'warm up' before placing a load on it.  
-    //                                   DUBLER MOD 080320 changed from 60
+    5,   // .ENGINE_WARMUP_DURATION  --> Allow engine X seconds to start and 'warm up' before placing a load on it.  
+    //                                   DUBLER MOD 080320 changed from 60... 062524 changed to 5 
+    //                                     to account for time used by display of settings
     #endif
     0};  // .REQURED_SENSORS  --> Force check and fault if some sensors are not present (eg alt temp sensor)
 
