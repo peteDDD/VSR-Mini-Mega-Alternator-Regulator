@@ -48,6 +48,7 @@
 // You can turn off the following features by commenting out the #define statements
 // Display Options - both OLED and SERIAL_DISPLAY can be used
 #define USE_OLED     // to use the Geekcreit SSD1306 I2C OLED which also requires the SoftWire shell to the I2CMaster library
+#define TIME_BETWEEN_OLED_SCREENS 2000 // ms
 #define OLED_DISPLAY_DEG_IN_F // display temperatures in Degrees F instead of C (comment out for Deg C)
 #define NO_BAT_TEMP_SENSOR // for LiFePO4, not using battery temp sensor
 
@@ -116,6 +117,8 @@
 #ifdef ENABLE_FEATURE_IN_SCUBA
 #define FIELD_PWM_SCUBA 23 //some small percent of maximum value for PWM  23 = 9%   32 = 12%
                            //the equation is value = int((target percentage * 255)/100)S
+
+
 #endif
 
 #define FEATURE_IN_FORCE_TO_FLOAT     // Enable FEATURE_IN port to prevent entering active charge modes (Bulk, Acceptance, Overcharge) and only allow Float or Post_Float with any CPE.                                                              //   This capability will ONLY be active if CPE #8 is selected, and it will also prevent other feature_in options from being usable
@@ -165,6 +168,7 @@
   //#define FEATURE_OUT_ENGINE_STOP_PORT FEATURE_OUT_PORT3
 #ifdef FEATURE_OUT_ENGINE_STOP
   #define ENGINE_STOP_PULSE_DURATION 1000 // milliseconds
+  #define FEATURE_OUT_ENGINE_STOP_PORT FEATURE_OUT_PORT3
 #endif
 
 //#define FEATURE_OUT_LIFEPO_SHUTDOWN_ALARM // Enable FEATURE_OUT port to go active when Alternator Controller receives an active Force_To_Float Feature-in
@@ -252,5 +256,7 @@
 //  5       FIREFLY    on   off  on
 //  6       CUSTOM     on   on   off
 //  7       LiFePO4    on   on   on
+
+
 
 #endif  // _CONFIG_H_

@@ -23,33 +23,15 @@
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
-SSD1306AsciiWire oled;
+extern SSD1306AsciiWire oled;
 
-extern const char *  chargingStateString;
-extern int    inChargingStateCount;
+void OLEDPrintlnCentered(const char *text, uint8_t row = 0);
+void OLEDWriteFeatureAssignments (void);
+void OLEDWriteSerialPortAssignments(void);
+float roundoff(float num,int precision);
 
 // LCD SCREEN FORMAT CONSTANTS AND VARIABLES
 #define screen2PixelsPerChar 7
-
-//FieldNumber  (this enum table must match the one in Remote Display)
-enum FieldNumber {
-  fnAV = 0,  // Alternator Volts
-  fnBV = 1,  // Battery Volts
-  fnAA = 2,  // Alternator Amps
-  fnBA = 3,  // Battery Amps
-  fnAT = 4,  // Alternator Temperature
-  fnBT = 5,  // Battery Temperature
-  fnPW = 6,  // PWM
-  fnCD = 7,  // CountDown
-  fnCS = 8,  // ChargeState  -- update display after CountDown to overwrite any dangling countdown number
-  fnSB = 9,  // Scuba
-  fnFL = 10, // FAULT
-  fnCR = 11, // Alternator Controler code revision
-  fnTM = 12, // Time HH:MM:SS in current chargingState
-  //TODO Need to add fnTM to remote display code
-  fnSCREEN2 = 92 // Clear screen, write Screen2
-};
-
 
 //Top row is 0
 #define screen2RowVolt      1
@@ -96,8 +78,26 @@ enum FieldNumber {
 
 // END LCD SCREEN FORMAT CONSTANTS AND VARIABLES
 
-//Template Class
+//FieldNumber  (this enum table must match the one in Remote Display)
+enum FieldNumber {
+  fnAV = 0,  // Alternator Volts
+  fnBV = 1,  // Battery Volts
+  fnAA = 2,  // Alternator Amps
+  fnBA = 3,  // Battery Amps
+  fnAT = 4,  // Alternator Temperature
+  fnBT = 5,  // Battery Temperature
+  fnPW = 6,  // PWM
+  fnCD = 7,  // CountDown
+  fnCS = 8,  // ChargeState  -- update display after CountDown to overwrite any dangling countdown number
+  fnSB = 9,  // Scuba
+  fnFL = 10, // FAULT
+  fnCR = 11, // Alternator Controler code revision
+  fnTM = 12, // Time HH:MM:SS in current chargingState
+  //TODO Need to add fnTM to remote display code
+  fnSCREEN2 = 92 // Clear screen, write Screen2
+};
 
+//Template Class
 template <class T>
 class LCDfield {
   public:
@@ -134,146 +134,52 @@ class LCDfield {
 
     void Write(T);
     void Update(T);
-}; // don't forget the semicolon at the end of the class
+};
 
-//                      (optional)
-// construct instances  LastValue), ObjectNumber, column,           row,              EraseWidth,      Digits,  Format
-// construct instances
-LCDfield <float> LCDaltVolts(         fnAV,       screen2ColAlt,    screen2RowVolt,   screen2EraseVolt,   2, screen2FormatVolt);
-LCDfield <float> LCDbatVolts(         fnBV,       screen2ColBat,    screen2RowVolt,   screen2EraseVolt,   2, screen2FormatVolt);
-LCDfield <int>   LCDaltAmps(          fnAA,       screen2ColAlt,    screen2RowAmp,    screen2EraseAmp,    0, screen2FormatAmp);
-LCDfield <int>   LCDbatAmps(          fnBA,       screen2ColBat,    screen2RowAmp,    screen2EraseAmp,    0, screen2FormatAmp);
-LCDfield <int>   LCDaltTemp(          fnAT,       screen2ColAlt,    screen2RowTemp,   screen2EraseTemp,   0, screen2FormatTemp);
-LCDfield <int>   LCDbatTemp(          fnBT,       screen2ColBat,    screen2RowTemp,   screen2EraseTemp,   0, screen2FormatTemp);
-// pre-load lastValue for PWM so 0% is displayed during ramping state
-LCDfield <int>   LCDPWM(    0,        fnPW,       screen2ColPWM,    screen2RowPWM,    screen2ErasePWM,    0, screen2FormatPWM);
-LCDfield <const char *> LCDState(     fnCS,       screen2ColState,  screen2RowState,  screen2EraseState,  0, screen2FormatState);
-LCDfield <int>   LCDCount(            fnCD,       screen2ColCount,  screen2RowCount,  screen2EraseCount,  0, screen2FormatCount);
-//LCDfield <int>    LCDCount2(          fnCD,       screen2ColCount2, screen2RowCount,  screen2EraseCount2, 0, screen2FormatCount);
-LCDfield <char *> LCDCount2(          fnTM,       screen2ColCount2, screen2RowCount,  screen2EraseCount2, 0, screen2FormatCount);
-//LCDfield <const char *> LCDCountString(fnCD,      screen2ColCount3, screen2RowCount,  screen2EraseCount2, 0, screen2FormatCount);
-LCDfield <const char *> LCDScuba(     fnSB,       screen2ColScuba,  screen2RowPWM,  screen2EraseScuba,  0, screen2FormatScuba);
-
-
-// Utility to round floating number precision to a specified number of decimal places
-float roundoff(float num,int precision)
-{
-      int temp=(int )(num*pow(10,precision));
-      int num1=num*pow(10,precision+1);
-      temp*=10;
-      temp+=5;
-      if(num1>=temp)
-              num1+=10;
-      num1/=10;
-      num1*=10;
-      num=num1/pow(10,precision+1);
-      return num;
-}//float roundoff(float num,int precision)
-
-//Template Functions
-
+//Template Function Definitions
 template <>  //forced write to the field.  No checking for changed field
-void LCDfield<char *>::Write(char *newValue) {
-    oled.clearField(m_column, m_row, m_eraseWidth);
-    oled.print(newValue);
-    oled.println(m_Format);
-#ifdef USE_SERIAL_DISPLAY
-    char buffer[40];
-
-    //sprintf_P(buffer, PSTR("DSP:%d,%s%c"),  // alternative to use program memory instead of RAM
-    sprintf(buffer, "$D:%d,%s%c",
-            m_ObjectNumber,
-            newValue, m_Format);
-    SERIAL_DISPLAY_PORT.println(buffer);
-#endif
-  }
+void LCDfield<char *>::Write(char *newValue);
 
 template <>  //overload function for const char* strings
-void LCDfield<const char *>::Update(const char* newValue) {
-  if (newValue != m_lastValue) {
-    m_lastValue = newValue;
-    oled.clearField(m_column, m_row, m_eraseWidth);
-    oled.print(newValue);
-    oled.println(m_Format);
-#ifdef USE_SERIAL_DISPLAY
-    char buffer[40];
-
-    //sprintf_P(buffer, PSTR("DSP:%d,%s%c"),  // alternative to use program memory instead of RAM
-    sprintf(buffer, "$D:%d,%s%c",
-            m_ObjectNumber,
-            newValue, m_Format);
-    SERIAL_DISPLAY_PORT.println(buffer);
-#endif
-  }
-}
+void LCDfield<const char *>::Update(const char* newValue);
 
 template <>  //catches floats
-void LCDfield<float>::Update(float newValue) {
-  newValue = roundoff(newValue, 2); // set precision to two decimal places
-  if (newValue != m_lastValue) {
-    m_lastValue = newValue;
-
-    oled.clearField(m_column, m_row, m_eraseWidth);
-    oled.print(newValue, m_Digits);  // this funtion call format will not work with const char* or String
-    oled.println(m_Format);
-#ifdef USE_SERIAL_DISPLAY
-    char buffer[40];
-    extern char *float2string(float v, uint8_t decimals);
-    //sprintf_P(buffer, PSTR("DSP:%d,%s%c"),  // alternative to use program memory instead of RAM
-    sprintf(buffer, "$D:%d,%s%c",
-            m_ObjectNumber,
-            float2string(newValue, m_Digits), m_Format);
-    SERIAL_DISPLAY_PORT.println(buffer);
-#endif
-  }//if (newValue != m_lastValue) 
-}//void LCDfield<float>::Update(T newValue) 
+void LCDfield<float>::Update(float newValue);
 
 template <typename T>  //catches all other types  ... integers
 void LCDfield<T>::Update(T newValue) {
- if (newValue != m_lastValue) 
- {
- /*    // Here we have a patch to prevent a "%%" from appearing on the OLED
-    if(this==&LCDPWM)  // only do this for the PWM field
-    {
-      if((m_lastValue == 100) && (newValue < 100)) // transition down from 100%
-      {
-        oled.clearField(m_column, m_row, m_eraseWidth + screen2PixelsPerChar); //erase one character wider
-        //TODO do we also need to update the scubastring here so we don't erase part of that?
-      }
-    } //if(this==&LCDPWM)
-*/
-  m_lastValue = newValue;
-  oled.clearField(m_column, m_row, m_eraseWidth);  // does not matter if it clears the field twice...
-  oled.print(newValue);
-  oled.println(m_Format);
-
+    if (newValue != m_lastValue) {
+        m_lastValue = newValue;
+        oled.clearField(m_column, m_row, m_eraseWidth);
+        oled.print(newValue);
+        oled.println(m_Format);
 #ifdef USE_SERIAL_DISPLAY
-    char buffer[40];
-    // TRAP TO FIX DANGLING COUNTDOWN DIGIT ON REMOTE SERIAL DISPLAY
-    if ((m_ObjectNumber == fnCD) && (newValue == 0)) 
-    { //Trap to catch dangling countdown digit on remote display
-      sprintf(buffer, "$D:%d,%s%c",
-              m_ObjectNumber,
-              "  ", m_Format);
-    }//if (m_ObjectNumber == fnCD)
-    // END OF TRAP for dangling countdown digit
-    else {
-      //sprintf_P(buffer, PSTR("DSP:%d,%d%c"), // alternative to use program memory instead of RAM
-      sprintf(buffer, "$D:%d,%d%c",
-              m_ObjectNumber,
-              newValue, m_Format);
-    }//else
-    SERIAL_DISPLAY_PORT.println(buffer);
+        char buffer[40];
+        if ((m_ObjectNumber == fnCD) && (newValue == 0)) {
+            sprintf(buffer, "$D:%d,%s%c",
+                    m_ObjectNumber,
+                    "  ", m_Format);
+        } else {
+            sprintf(buffer, "$D:%d,%d%c",
+                    m_ObjectNumber,
+                    newValue, m_Format);
+        }
+        SERIAL_DISPLAY_PORT.println(buffer);
 #endif
-  }//if (newValue != m_lastValue) 
-}//void LCDfield<T>::Update(T newValue) 
-
-
-void OLEDPrintlnCentered(const char *text, uint8_t row = 0)
-{
-  size_t size = oled.strWidth(text);
-  oled.setCursor((oled.displayWidth()-size)/2, row);
-  oled.println(text);
+    }
 }
+
+extern LCDfield<float> LCDaltVolts;
+extern LCDfield<float> LCDbatVolts;
+extern LCDfield<int> LCDaltAmps;
+extern LCDfield<int> LCDbatAmps;
+extern LCDfield<int> LCDaltTemp;
+extern LCDfield<int> LCDbatTemp;
+// pre-load lastValue for PWM so 0% is displayed during ramping state
+extern LCDfield<int> LCDPWM;
+extern LCDfield<const char *> LCDState;
+extern LCDfield<int> LCDCount;
+extern LCDfield<char *> LCDCount2;
+extern LCDfield<const char *> LCDScuba;
 
 #endif

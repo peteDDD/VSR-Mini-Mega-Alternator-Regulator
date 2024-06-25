@@ -30,6 +30,7 @@
 
 #ifdef USE_OLED
   #include "I2C_OLED.h"
+ // extern SSD1306AsciiWire oled;
   char buffer2[20];
 #else
   #include <SoftI2CMaster.h> // http://homepage.hispeed.ch/peterfleury/avr-software.html
@@ -90,6 +91,9 @@ int32_t accumulatedASecs;    // Accumulated Amp-Seconds of current charge cycle.
 int32_t accumulatedWSecs;    // Accumulated Watt-Seconds of current charge cycle.  This actually holds Watts @ ACCUMULATED_SAMPLING rate. Need to divide to get true value.
 
 int16_t savedShuntRawADC; // Place holder for the last raw Shunt ADC reading during read_INA().  Used by calibrate_ADCs() to determine offset error of board
+
+extern const char *chargingStateString;
+
 
 int normalizeNTCAverage(uint32_t accumalatedSample, int beta, bool hasRG);
 int read_Bat_INA226(void);
@@ -478,7 +482,7 @@ void WriteOLEDTitlePage(void)
   //oled.setCursor(30,6);
  //oled.println(DATE_CODE);
  OLEDPrintlnCentered(DATE_CODE, 6);
-  delay(2000);
+  delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
 void WriteOLEDSecondPage(void)
@@ -488,7 +492,7 @@ void WriteOLEDSecondPage(void)
   OLEDPrintlnCentered(BOAT_NAME, 1);
   OLEDPrintlnCentered(VSR_NAME, 3);
   
-  delay(2000);
+  delay(TIME_BETWEEN_OLED_SCREENS);
 }
   
 void WriteOLEDBatteryType(void)
@@ -527,7 +531,7 @@ void WriteOLEDBatteryType(void)
       break;
   }
   
-  delay(2000);
+  delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
 void WriteOLEDDIPSettings(void)
@@ -544,7 +548,7 @@ void WriteOLEDDIPSettings(void)
   oled.print("TACH MODE:  ");
   if(tachMode) oled.println("ON");
   else oled.println("OFF");
-  delay(2000);
+  delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
 void WriteOLEDFactoryReset(void)
@@ -557,7 +561,7 @@ void WriteOLEDFactoryReset(void)
   //oled.setCursor(30, 4);
   //oled.println(" RESET");
   OLEDPrintlnCentered("RESET", 4);
-  delay(2000);
+  delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
 void WriteOLEDResetting(void)
@@ -679,7 +683,7 @@ void WriteOLEDFaultString(void)
       //oled.println(" I2C 1 Error  ");
       OLEDPrintlnCentered(" I2C 1 Error  ", 5);
       break;
-    
+    //
     case 200:
       //oled.println(" I2C 2 Error  ");
       OLEDPrintlnCentered(" I2C 2 Error  ", 5);
@@ -699,7 +703,7 @@ void WriteOLEDDataScreenStaticData(void)
   oled.setFont(Callibri15);
   oled.setCursor(3, 2);
   oled.println(chargingStateString);
-  delay(2000);
+  delay(TIME_BETWEEN_OLED_SCREENS);
 
   oled.setFont(font5x7);
   oled.clear();
