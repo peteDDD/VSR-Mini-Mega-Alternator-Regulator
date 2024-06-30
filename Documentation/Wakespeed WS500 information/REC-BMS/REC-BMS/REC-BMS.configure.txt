@@ -1,0 +1,32 @@
+#
+# Configuration file for REC BMS
+#
+#     SMA w/Zero Output Technology
+#	Note:  If instability is seen with Current Regulation, connect
+#	       WS500 Current Shunt Sensors to battery current shunt.
+#     CAN 250Kbps
+#     Battery system: 
+#	Primarily Managed by REC BMS
+#	Fallback (Limp home mode) = fixed 13.2v
+#	Hard temperature safety limits 0..50c
+#	Reduced Charge Rate (0.02c) outside: 5..45c
+#     Alternator:  100c target, standard pullbacks.  30 second warmup   
+#
+#	Must use 'Victron' version of REC BMS
+#
+
+       
+# REC BMS 4-11-2020
+$SCA: 0,100,1.00,0.75,0.50,0,0,0,10000,0,0,30,0@
+$CPA:8 13.2,0,0,0@
+$CPO:8 0,0,0.0,0@
+$CPF:8 13.2,0,0,0,0.0,0.0,0@
+$CPP:8 0,0.0,0,0.0@
+$CPE:8 0.0,0,0,0@
+$CPB:8 0.0,0,2,50,0.0,5,40,25,0@
+$SCO:8,0.0,0.0,0@
+$SCN: 0,WS500-REC,1234@
+$CCN:0,1,70,1,1,1,1,3,0,0,0.0,0@
+$SCT: 12,2.83,0,0,0@
+
+
