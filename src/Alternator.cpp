@@ -890,7 +890,7 @@ void manage_ALT()
         break;
 
     case LIFEPO_FORCED_SHUTDOWN:
-        chargingStateString = "LIFEPO STDN";
+        chargingStateString = "LIFEPO SHDN";
         fieldPWMvalue = 0; //  Turn off alternator.
         break;
 
