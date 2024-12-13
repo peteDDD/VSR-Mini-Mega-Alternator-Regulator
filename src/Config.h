@@ -66,7 +66,7 @@
 #else
 #ifdef MY_GENSET
 #define VSR_NAME "GENSET"
-#define ALT_AMP_LIMIT_SETTING 125  // you set this value
+#define ALT_AMP_LIMIT_SETTING 100  // you set this value
 #define ALT_TEMP_SETTING 96 // 96C is 205 deg F
 #else
 #define ALT_AMP_LIMIT_SETTING 100  // default setting
