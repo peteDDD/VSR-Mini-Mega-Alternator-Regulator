@@ -98,9 +98,9 @@
 //
 //------------------------------------------------------------------------------------------------------
 
+
 void setup()
 {
-
   wdt_enable(WDT_PERIOD); // Because we do SOOO much during setup use the Watchdog during startup...
 
   Serial.begin(SYSTEM_BAUD); // Start the Serial port.

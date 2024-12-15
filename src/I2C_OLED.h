@@ -22,6 +22,7 @@
 #define LCD_ADDRESS 0x03C          // I2C address of the Geekcreit SSD1306
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
+#include "Config.h"
 
 extern SSD1306AsciiWire oled;
 

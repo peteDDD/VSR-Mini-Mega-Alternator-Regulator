@@ -56,8 +56,8 @@
 
 #define BOAT_NAME "Regina Oceani"
 // SET ONE OR THE OTHER OF THE FOLLOWING TWO
-//#define MY_ENGINE
-#define MY_GENSET
+#define MY_ENGINE
+//#define MY_GENSET
 
 #ifdef MY_ENGINE
 #define VSR_NAME "ENGINE"
@@ -67,7 +67,7 @@
 #ifdef MY_GENSET
 #define VSR_NAME "GENSET"
 #define ALT_AMP_LIMIT_SETTING 100  // you set this value
-#define ALT_TEMP_SETTING 96 // 96C is 205 deg F
+#define ALT_TEMP_SETTING 96 // 96C is 205 deg F   108C is 225F
 #else
 #define ALT_AMP_LIMIT_SETTING 100  // default setting
 #define ALT_TEMP_SETTING 90 // 90 C is 195F

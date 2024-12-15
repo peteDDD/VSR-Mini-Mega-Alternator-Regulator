@@ -434,6 +434,7 @@ void WriteOLEDSerialPortAssignments(void)
 
     oled.clear();
     oled.setFont(Callibri15);
+    //oled.setFont(TimesNewRoman16);
     oled.setCursor(0, 0);
     oled.print("Serial Port 1: ");
     oled.println(SerialPort1String);

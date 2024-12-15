@@ -43,7 +43,7 @@
                                                 // Note the yyy's are to follow the Semantiic Version spec guidelines:  https://semver.org/
                                                 // Make sure to use `-' for any trailing modifiers after the final version number 'number'
 #define REV_FORK "MiniMega v1.0"
-#define DATE_CODE "11/06/21"
+#define DATE_CODE  "12/15/24" // "11/06/21"
 
 #include "Config.h"
 // --------  BOARD SPECIFIC SELECTIONS
@@ -128,7 +128,7 @@
 #define NTC_FET_PORT A0 // Onboard FET temperature sensor
 #define NTC_ALT_PORT A2 // Alternator NTC port
 #define NTC_BAT_PORT A8 // Battery NTC port
-#define NTC_AVERAGING 15 // There are up to 3 NTC sensors, and we will average 5 A/D samples each before converting to a temperature, to smooth things over. (Max 254) 
+#define NTC_AVERAGING 30 //15 12/15/24 changed from 15 to 30  // There are up to 3 NTC sensors, and we will average 5 A/D samples each before converting to a temperature, to smooth things over. (Max 254) 
                          // Note that this, combined with SENSOR_SAMPLE_RATE will define how often the temperatures get updated...
 
 #define STATOR_IRQ_NUMBER 4 // Stator IRQ is attached to arduino pin 2, INT-4, OSC3B, PE4
@@ -167,7 +167,7 @@
 #define FAULT_BAT_VOLTS_EQUALIZE 18.0 // When doing Equalization, allow a higher limit.
 #define FAULT_BAT_VOLTS_LOW 8.0       // Anything below this means battery is damaged, or sensing wire is missing / failing.
 #define FAULT_BAT_TEMP 60             //  At or above this, fault out. (Approx 140F)
-#define FAULT_ALT_TEMP 1.1            //  Fault if Alt Temp exceeds desired set point by 10%
+#define FAULT_ALT_TEMP 1.15           //  Fault if Alt Temp exceeds desired set point by 10%  12/15/2024 - Changed to 1.15  15%
 #define FAULT_FET_TEMP 70             // If Field driver FETs are over 80c (Approx 160f), something is wrong with the FETs - fault.
 
 #define ADPT_ACPT_TIME_FACTOR 5 // If the regulators is operating in Adaptive Acceptance Duration mode (either because EXIT_ACPT_AMPS was set = -1, or                   
@@ -305,7 +305,7 @@
 
 // ----- Mainloop timing values, how often do we update the PWM, check for key pressed, etc.
 //         All times are in mS
-#define SENSOR_SAMPLE_RATE 50UL         // If we are not able to synchronize with the stator, force a sample of Volts, Amps, Temperatures, every 50mS min.
+#define SENSOR_SAMPLE_RATE 100UL //50UL  12/15/24 changed from 50 to 100       // If we are not able to synchronize with the stator, force a sample of Volts, Amps, Temperatures, every 50mS min.
 #define ACCUMULATE_SAMPLING_RATE 1000UL // Update the accumulated AHs and WHs  every 1 second.
 #define SAMPLE_ALT_CAP_DURATION 10000UL // When we have decided it is time to sample the Alternators capability, run it hard for 10 seconds.
 #define SAMPLE_ALT_CAP_REST 30000UL     // and give a 30 second minute rest period between Sampling Cycles.

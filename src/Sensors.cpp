@@ -29,13 +29,13 @@
                   // Only use with AVR processors
 
 #ifdef USE_OLED
-  #include "I2C_OLED.h"
- // extern SSD1306AsciiWire oled;
-  char buffer2[20];
+#include "I2C_OLED.h"
+// extern SSD1306AsciiWire oled;
+char buffer2[20];
 #else
-  #include <SoftI2CMaster.h> // http://homepage.hispeed.ch/peterfleury/avr-software.html
-#endif                     //USE_OLED   // DUBLER 061420 new URL https://github.com/felias-fogg/SoftI2CMaster 
-                           // It is too bad there are so many of these with the same name.  Be sure to get the correct one
+#include <SoftI2CMaster.h> // http://homepage.hispeed.ch/peterfleury/avr-software.html
+#endif                     // USE_OLED   // DUBLER 061420 new URL https://github.com/felias-fogg/SoftI2CMaster
+       //  It is too bad there are so many of these with the same name.  Be sure to get the correct one
 //----  Public  veriables
 float measuredAltVolts = 0; // The regulator takes local measurements, and to start with we ASSUME these sensors are connected to the Alternator.  So, we locally measure
 float measuredAltAmps = 0;  // ALTERNATOR voltage and current.
@@ -44,15 +44,15 @@ float measuredBatAmps = 0;  // the regulator is what we are to 'regulate' to, so
 // On the Mini Mega version, we have two INA226 voltage and current sensor chips on the I2C bus, one for the battery and one for the alternator.
 // TODO Add config setting to not use the alternator INA226
 
-bool shuntBatAmpsMeasured = false; 
+bool shuntBatAmpsMeasured = false;
 bool shuntAltAmpsMeasured = false;
 //  shuntBatAmpsMeasured and shuntAltAmpsMeasured are signals that we have ever been able to measure Amps via the respective shunt - used to disable amp based decisions in
 //  manageAlt() when we are not even able to measure Amps....
 int measuredAltWatts = 0;
-int measuredFETTemp = -99;  // -99 indicated not present.  Temperature of Field FETs, in degrees C.
-int measuredAltTemp = -99;  // -99 indicated not present.  -100 indicates user has shorted the Alt probe and we should run in half-power mode.
-//int measuredAlt2Temp = -99; // -99 indicated not present.  Value derived from 2nd NTC port if battery temperature is delivered by an external source via the CAN.
-int measuredBatTemp = -99;  // -99 indicates we have not measured this yet, or the sender has failed and we need to use Defaults.
+int measuredFETTemp = -99; // -99 indicated not present.  Temperature of Field FETs, in degrees C.
+int measuredAltTemp = -99; // -99 indicated not present.  -100 indicates user has shorted the Alt probe and we should run in half-power mode.
+// int measuredAlt2Temp = -99; // -99 indicated not present.  Value derived from 2nd NTC port if battery temperature is delivered by an external source via the CAN.
+int measuredBatTemp = -99; // -99 indicates we have not measured this yet, or the sender has failed and we need to use Defaults.
 // Battery Temperature typically will be measured by the 2nd NTC, the B-NTC port.  However, if the temperature is provided by an external source
 //  (Specifically, via the CAN bus), then the 2nd NTC port will be considered a 2nd alternator sensor for alternator temperature regulation.
 bool batTempExternal = false; // Have we received the battery temperature from an external source via the CAN?
@@ -60,7 +60,7 @@ bool batTempExternal = false; // Have we received the battery temperature from a
 
 int measuredFieldAmps = -99; // What is the current being delivered to the field?  -99 indicated we are not able to measure it.
 bool updatingBatVAs = false; // Are we in the process of updating the Volts and Amps?  (Meaning, hold off doing anything critical until we get new data..)
-bool updatingAltVAs = false; 
+bool updatingAltVAs = false;
 //----- Calibration buffer
 //      Future releases may allow for calibration of individual boards.  Either by user, or by some external manufacturing process.
 //      Would allow for use of lower-cost resistors in all the dividers.  This structure is saved in the FLASH of each device.
@@ -72,8 +72,6 @@ tCAL ADCCal = {false, // locked   == Let user do calibration if they wish to.
                0,     // .VBAT_OFFSET
                0,     // .BAT_AMP_OFFSET == ADC Offset error of shunt circuit measured @ 0A
                0};    // .ALT_AMP_OFFSET == ADC Offset error of shunt circuit measured @ 0A
-
-
 
 //----  Internal veriables and prototypes
 uint32_t sensorsLastSampled; // Used in the main loop to force an sensor (INA226, NTC) sample cycle if alternator isn't running.
@@ -93,7 +91,6 @@ int32_t accumulatedWSecs;    // Accumulated Watt-Seconds of current charge cycle
 int16_t savedShuntRawADC; // Place holder for the last raw Shunt ADC reading during read_INA().  Used by calibrate_ADCs() to determine offset error of board
 
 extern const char *chargingStateString;
-
 
 int normalizeNTCAverage(uint32_t accumalatedSample, int beta, bool hasRG);
 int read_Bat_INA226(void);
@@ -129,14 +126,14 @@ bool initialize_sensors(void)
   oled.begin(&Adafruit128x64, LCD_ADDRESS); // start up the SDD1306 OLED
 #else
   i2c_init();
-#endif //USE_OLED
+#endif // USE_OLED
 
   sensorsLastSampled = millis(); // Prime all the loop counters;
   reset_run_summary();
   sample_ALT_and_BAT_VoltAmps(); // Let's get these guys doing a round of sampling for use to decide system voltage.
 
   return (true);
-} //initialize_sensors
+} // initialize_sensors
 
 //------------------------------------------------------------------------------------------------------
 // Calibrate ADCs
@@ -180,7 +177,7 @@ bool read_sensors(void)
 
   resolve_ADCs_for_Temperatures();
   return (read_ALT_and_BAT_VoltAmps()); // here we update the actual values, having already started the read earlier, and return the status
-} //read_sensors
+} // read_sensors
 
 //------------------------------------------------------------------------------------------------------
 // Sample ALT Volts & Amps
@@ -197,12 +194,12 @@ bool sample_ALT_and_BAT_VoltAmps(void)
   ptr[0] = highByte(INA226_CONFIG); // Config current & Vbat INA226
   ptr[1] = lowByte(INA226_CONFIG);
   I2c.write(INA226_Bat_I2C_ADDR, CONFIG_REG, ptr, 2); // Writing the Config reg also 'triggers' a INA226 sample cycle.
-  updatingBatVAs = true; // Let the world know we are working on getting a new Battery Volts and Amps reading
+  updatingBatVAs = true;                              // Let the world know we are working on getting a new Battery Volts and Amps reading
   I2c.write(INA226_Alt_I2C_ADDR, CONFIG_REG, ptr, 2);
   updatingAltVAs = true; // Let the world know we are working on getting a new Alternator Volts and Amps reading
 
   return (true);
-} //bool  read_sensors(void) {
+} // bool  read_sensors(void) {
 
 //------------------------------------------------------------------------------------------------------
 //
@@ -222,20 +219,20 @@ bool read_ALT_and_BAT_VoltAmps(void)
   unsigned u = read_Bat_INA226(); // Get Alt Volts, Alt Amps, and update global variables.
   if (u != 0)
   {
-    chargingState = FAULTED;              // A non-zero return contains the I2C error code.
+    chargingState = FAULTED;                  // A non-zero return contains the I2C error code.
     faultCode = FC_BAT_INA226_READ_ERROR + u; // Add in I2C returned error code.
-    return (false);                       // And loop back to allow fault handler to stop everything!
+    return (false);                           // And loop back to allow fault handler to stop everything!
   }
 
-//Now read the alternator INA226 values
+  // Now read the alternator INA226 values
 
   u = read_Alt_INA226(); // Get Bat Volts, Bat Shunt Amps, and update global variables.
 
   if (u != 0)
   {
-    chargingState = FAULTED;                       // A non-zero return contains the I2C error code.
+    chargingState = FAULTED;                  // A non-zero return contains the I2C error code.
     faultCode = FC_ALT_INA226_READ_ERROR + u; // Add in I2C returned error code.
-    return (false);                                // And loop back to allow fault handler to stop everything!
+    return (false);                           // And loop back to allow fault handler to stop everything!
   }
 
   measuredAltWatts = (int)(measuredAltVolts * measuredAltAmps);
@@ -246,8 +243,7 @@ bool read_ALT_and_BAT_VoltAmps(void)
     shuntBatAmpsMeasured = true;
 
   return (true);
-} //read_ALT_VoltAmps
-
+} // read_ALT_VoltAmps
 
 //------------------------------------------------------------------------------------------------------
 // Read INA-226
@@ -261,7 +257,7 @@ bool read_ALT_and_BAT_VoltAmps(void)
 //
 //------------------------------------------------------------------------------------------------------
 int read_Bat_INA226(void)
-{ //BATTERY VOLTS AND AMPS
+{ // BATTERY VOLTS AND AMPS
   int16_t i;
 
   //--- Do we have anything to read?   Check the VBat+, Alternator AMPs sensor.
@@ -272,30 +268,29 @@ int read_Bat_INA226(void)
   i |= I2c.receive();
 
   if (i & 0x0008)
-  { // Conversion is completed!   Go get them!
+  {                                                               // Conversion is completed!   Go get them!
     if ((i = I2c.read(INA226_Bat_I2C_ADDR, VOLTAGE_REG, 2)) != 0) // Check Valt
-      return (i);  // If I2C read error (non zero return), return error and skip the rest.
+      return (i);                                                 // If I2C read error (non zero return), return error and skip the rest.
 
     i = I2c.receive() << 8;
     i |= I2c.receive();
 
-    measuredBatVolts = i * INA226_VOLTS_PER_BIT * ADCCal.VBAT_GAIN_ERROR; 
+    measuredBatVolts = i * INA226_VOLTS_PER_BIT * ADCCal.VBAT_GAIN_ERROR;
 
     if ((i = I2c.read(INA226_Bat_I2C_ADDR, SHUNT_V_REG, 2)) != 0) // Now read the Amps, read the raw shunt voltage.
-      return (i);  // If I2C read error (non zero return), return error and skip the rest.
+      return (i);                                                 // If I2C read error (non zero return), return error and skip the rest.
 
     i = I2c.receive() << 8;
     i |= I2c.receive();
 
-    measuredBatAmps = (i - ADCCal.BAT_AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.BAT_AMP_SHUNT_RATIO;  
+    measuredBatAmps = (i - ADCCal.BAT_AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.BAT_AMP_SHUNT_RATIO;
     if (systemConfig.REVERSED_BAT_SHUNT == true)
       measuredBatAmps *= -1.0; // If shunt is wired backwards, reverse measured value.
 
     updatingBatVAs = false; // All done, ready to do another synchronized sample session anytime.
   }
   return (0);
-} //int read_Bat_INA226(void) {
-
+} // int read_Bat_INA226(void) {
 
 int read_Alt_INA226(void)
 { // ALTERNATOR VOLTS AND AMPS
@@ -304,28 +299,28 @@ int read_Alt_INA226(void)
   //--- Do we have anything to read?   Check the VBat+, Alternator AMPs sensor.
 
   if ((i = I2c.read(INA226_Alt_I2C_ADDR, STATUS_REG, 2)) != 0) // Read in the Status Register.
-    return (i);  // If I2C read error (non zero return), skip the rest.
+    return (i);                                                // If I2C read error (non zero return), skip the rest.
 
   i = I2c.receive() << 8;
   i |= I2c.receive();
 
   if (i & 0x0008)
-  {  // Conversion is completed!   Go get them!
+  {                                                               // Conversion is completed!   Go get them!
     if ((i = I2c.read(INA226_Alt_I2C_ADDR, VOLTAGE_REG, 2)) != 0) // Check Valt
-      return (i);  // If I2C read error (non zero return), return error and skip the rest.
+      return (i);                                                 // If I2C read error (non zero return), return error and skip the rest.
 
     i = I2c.receive() << 8;
     i |= I2c.receive();
 
-    measuredAltVolts = i * INA226_VOLTS_PER_BIT * ADCCal.VBAT_GAIN_ERROR; 
+    measuredAltVolts = i * INA226_VOLTS_PER_BIT * ADCCal.VBAT_GAIN_ERROR;
 
     if ((i = I2c.read(INA226_Alt_I2C_ADDR, SHUNT_V_REG, 2)) != 0) // Now read the Amps, read the raw shunt voltage.
-      return (i);  // If I2C read error (non zero return), return error and skip the rest.
+      return (i);                                                 // If I2C read error (non zero return), return error and skip the rest.
 
     i = I2c.receive() << 8;
     i |= I2c.receive();
 
-    measuredAltAmps = (i - ADCCal.ALT_AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.ALT_AMP_SHUNT_RATIO; // Each bit = 2.5uV Shunt Voltage.  Adjust by Shunt ratio. 
+    measuredAltAmps = (i - ADCCal.ALT_AMP_OFFSET) * INA226_VOLTS_PER_AMP * (float)systemConfig.ALT_AMP_SHUNT_RATIO; // Each bit = 2.5uV Shunt Voltage.  Adjust by Shunt ratio.
     if (systemConfig.REVERSED_ALT_SHUNT == true)
       measuredAltAmps *= -1.0; // If shunt is wired backwards, reverse measured value.
 
@@ -364,7 +359,7 @@ void sample_ADCs_for_Temperatures(void)
     break;
   }
   accumulatedADCSamples++;
-} //void sample_ADCs(void) {
+} // void sample_ADCs(void) {
 
 //------------------------------------------------------------------------------------------------------
 // Resolve ADCs
@@ -380,8 +375,7 @@ void resolve_ADCs_for_Temperatures(void)
   measuredAltTemp = normalizeNTCAverage(accumulatedNTC_A, NTC_BETA_ALT_AND_BAT, true); // Convert the A NTC sensor for the alternator.
 
   measuredBatTemp = normalizeNTCAverage(accumulatedNTC_B, NTC_BETA_ALT_AND_BAT, true); // Convert the A NTC sensor for the battery
-    //measuredAlt2Temp = -99;
-  
+                                                                                       // measuredAlt2Temp = -99;
 
 #ifdef NTC_FET_PORT
   measuredFETTemp = normalizeNTCAverage(accumulatedNTC_FET, NTC_BETA_FETs, false); // And also convert the FET sensor (Onboard FET NTC does not have a Ground Isolation Resistor)
@@ -390,12 +384,11 @@ void resolve_ADCs_for_Temperatures(void)
   if ((measuredBatTemp > NTC_OUT_OF_RANGE_HIGH) || (measuredBatTemp < NTC_OUT_OF_RANGE_LOW))
     measuredBatTemp = -99; // Out of bound A/D reading, indicates something is wrong...
 
-
   if (measuredAltTemp > NTC_SHORTED)
     measuredAltTemp = -100; // If user has shorted out the Alt sensor -
   else                      // that indicates they want to run in 1/2 power mode
-      if ((measuredAltTemp > NTC_OUT_OF_RANGE_HIGH) || (measuredAltTemp < NTC_OUT_OF_RANGE_LOW))
-    measuredAltTemp = -99;
+    if ((measuredAltTemp > NTC_OUT_OF_RANGE_HIGH) || (measuredAltTemp < NTC_OUT_OF_RANGE_LOW))
+      measuredAltTemp = -99;
 
 #ifdef NTC_FET_PORT
   if ((measuredFETTemp > NTC_OUT_OF_RANGE_HIGH) || (measuredFETTemp < NTC_OUT_OF_RANGE_LOW))
@@ -407,7 +400,7 @@ void resolve_ADCs_for_Temperatures(void)
   accumulatedNTC_FET = 0;
   accumulatedADCSamples = 0;
 
-} //void resolve_ADCs(void) {
+} // void resolve_ADCs(void) {
 
 int normalizeNTCAverage(uint32_t accumulatedSample, int beta, bool hasRG)
 { // Helper function, will convert the passed oversampled ADC value into a temperature
@@ -415,17 +408,17 @@ int normalizeNTCAverage(uint32_t accumulatedSample, int beta, bool hasRG)
   int adcNTC;
 
   adcNTC = (accumulatedSample / (accumulatedADCSamples / 3)); // Calculate NTC resistance
-  if (adcNTC > 1000)   // There must not be any NTC probe attached to this port.
-    return (-1000);    // Signal that by sending back a very very cold temp...
+  if (adcNTC > 1000)                                          // There must not be any NTC probe attached to this port.
+    return (-1000);                                           // Signal that by sending back a very very cold temp...
   resistanceNTC = (1023.0 / (float)adcNTC) - 1.0;
   resistanceNTC = (float)NTC_RF / resistanceNTC;
 
   if (hasRG)
     resistanceNTC -= (float)NTC_RG; // Adjust for the Ground Isolation Resistor, if this sensor has one.
-  // Use Beta method for calculating dec-C.
+  // Use Beta method for calculating deg-C.
   return ((int)(1 / (log(resistanceNTC / NTC_RO) / beta + 1 / (25.0 + 273.15)) - 273.15));
 
-} //int normalizeNTCAverage(uint32_t accumulatedSample,...
+} // int normalizeNTCAverage(uint32_t accumulatedSample,...
 
 //------------------------------------------------------------------------------------------------------
 //
@@ -449,7 +442,7 @@ void update_run_summary(void)
     accumulatedWSecs += measuredAltWatts;
   }
 
-} //void update_run_summary(void) {
+} // void update_run_summary(void) {
 
 //------------------------------------------------------------------------------------------------------
 //
@@ -474,14 +467,14 @@ void WriteOLEDTitlePage(void)
   // output version/fork and then the static parts of the LCD display
   oled.clear();
   oled.setFont(Callibri15);
-  //oled.setCursor(10, 1);
-  OLEDPrintlnCentered("VSR MINI MEGA",1);
-  //oled.setCursor(18, 3);
- // oled.println(REV_FORK);
- OLEDPrintlnCentered(REV_FORK, 3);
-  //oled.setCursor(30,6);
- //oled.println(DATE_CODE);
- OLEDPrintlnCentered(DATE_CODE, 6);
+  // oled.setCursor(10, 1);
+  OLEDPrintlnCentered("VSR MINI MEGA", 1);
+  // oled.setCursor(18, 3);
+  // oled.println(REV_FORK);
+  OLEDPrintlnCentered(REV_FORK, 3);
+  // oled.setCursor(30,6);
+  // oled.println(DATE_CODE);
+  OLEDPrintlnCentered(DATE_CODE, 6);
   delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
@@ -491,46 +484,46 @@ void WriteOLEDSecondPage(void)
   oled.setFont(Callibri15);
   OLEDPrintlnCentered(BOAT_NAME, 1);
   OLEDPrintlnCentered(VSR_NAME, 3);
-  
+
   delay(TIME_BETWEEN_OLED_SCREENS);
 }
-  
+
 void WriteOLEDBatteryType(void)
 {
   oled.clear();
   oled.setFont(Callibri15);
-  //oled.setCursor(20, 0);
-  //oled.println("Battery Type");
+  // oled.setCursor(20, 0);
+  // oled.println("Battery Type");
   OLEDPrintlnCentered("Battery Type", 0);
-  //oled.setCursor(30, 2);
-  //oled.println(chargingParms.BATTERY_TYPE);
+  // oled.setCursor(30, 2);
+  // oled.println(chargingParms.BATTERY_TYPE);
   OLEDPrintlnCentered(chargingParms.BATTERY_TYPE, 2);
 
-  //oled.setCursor(20, 5);
-  switch(int(systemAmpMult *2 )) // systemAmpMult scales to 500AH, so have to multiply by 2
-                               //   to get integer steps for the four levels of bat bank size
+  // oled.setCursor(20, 5);
+  switch (int(systemAmpMult * 2)) // systemAmpMult scales to 500AH, so have to multiply by 2
+                                  //   to get integer steps for the four levels of bat bank size
   {
-    case 1:
-      //oled.println("< 250AH");
-      OLEDPrintlnCentered("< 250AH", 5);
-      break;
+  case 1:
+    // oled.println("< 250AH");
+    OLEDPrintlnCentered("< 250AH", 5);
+    break;
 
-    case 2:
-      //oled.println("250 - 500AH");
-      OLEDPrintlnCentered("250 - 500AH", 5);
-      break;
-    
-    case 3:
-      //oled.println("500AH - 750AH");
-      OLEDPrintlnCentered("500AH - 750AH", 5);
-      break;
+  case 2:
+    // oled.println("250 - 500AH");
+    OLEDPrintlnCentered("250 - 500AH", 5);
+    break;
 
-    case 4:
-      //oled.println("> 750AH");
-      OLEDPrintlnCentered("> 750AH", 5);
-      break;
+  case 3:
+    // oled.println("500AH - 750AH");
+    OLEDPrintlnCentered("500AH - 750AH", 5);
+    break;
+
+  case 4:
+    // oled.println("> 750AH");
+    OLEDPrintlnCentered("> 750AH", 5);
+    break;
   }
-  
+
   delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
@@ -540,14 +533,18 @@ void WriteOLEDDIPSettings(void)
   oled.setFont(Callibri15);
   oled.setCursor(8, 1);
   oled.print("SMALL ALT:  ");
-  
-  if(smallAltMode) oled.println("YES");
-  else oled.println("NO");
-  
+
+  if (smallAltMode)
+    oled.println("YES");
+  else
+    oled.println("NO");
+
   oled.setCursor(8, 4);
   oled.print("TACH MODE:  ");
-  if(tachMode) oled.println("ON");
-  else oled.println("OFF");
+  if (tachMode)
+    oled.println("ON");
+  else
+    oled.println("OFF");
   delay(TIME_BETWEEN_OLED_SCREENS);
 }
 
@@ -555,11 +552,11 @@ void WriteOLEDFactoryReset(void)
 {
   oled.clear();
   oled.setFont(Callibri15);
-  //oled.setCursor(30, 1);
-  //oled.println("FACTORY");
+  // oled.setCursor(30, 1);
+  // oled.println("FACTORY");
   OLEDPrintlnCentered("FACTORY", 1);
-  //oled.setCursor(30, 4);
-  //oled.println(" RESET");
+  // oled.setCursor(30, 4);
+  // oled.println(" RESET");
   OLEDPrintlnCentered("RESET", 4);
   delay(TIME_BETWEEN_OLED_SCREENS);
 }
@@ -578,7 +575,7 @@ void WriteOLEDNonResetFault(void)
   // output version/fork and then the static parts of the LCD display
   oled.clear();
   oled.setFont(Callibri15);
-  //oled.println("NON-RESETTING");
+  // oled.println("NON-RESETTING");
   OLEDPrintlnCentered("NON-RESETTING", 1);
   WriteOLEDFaultString();
 }
@@ -588,113 +585,112 @@ void WriteOLEDFault(void)
   // output version/fork and then the static parts of the LCD display
   oled.clear();
   oled.setFont(Callibri15);
-  //delay(300);
-  //oled.clear();
+  // delay(300);
+  // oled.clear();
   WriteOLEDFaultString();
 }
 
 void WriteOLEDFaultString(void)
 {
-  //oled.setCursor(35, 3);
+  // oled.setCursor(35, 3);
   OLEDPrintlnCentered("FAULT  ", 3);
   char faultCodeStr[10];
   sprintf(faultCodeStr, "%u", faultCode);
   OLEDPrintlnCentered(faultCodeStr, 3);
-  
-  //oled.setCursor(25,5);
-  switch(faultCode & 0x7FFFU) // mask out reset bit 0x8000
-  {   // fault code list is in System.h
-    case 12:
-      //oled.println("Battery Temp");
-      OLEDPrintlnCentered("Battery Temp", 5);
-      break;
 
-    case 13:
-      //oled.println("BatteryVolts");
-      OLEDPrintlnCentered("BatteryVolts", 5);
-      break;
-    
-    case 14:
-      //oled.println("Bat Low Volts");
-      OLEDPrintlnCentered("Bat Low Volts", 5);
-      break;
+  // oled.setCursor(25,5);
+  switch (faultCode & 0x7FFFU) // mask out reset bit 0x8000
+  {                            // fault code list is in System.h
+  case 12:
+    // oled.println("Battery Temp");
+    OLEDPrintlnCentered("Battery Temp", 5);
+    break;
 
-    case 21:
-      //oled.println("  Alt Temp   ");
-      OLEDPrintlnCentered("  Alt Temp   ", 5);
-      break;
-        
-    case 22:
-      //oled.println("  Alt RPMs   ");
-      OLEDPrintlnCentered("  Alt RPMs   ", 5);
-      break;
-    
-    case 24:
-      //oled.println("Alt Temp Ramp");
-      OLEDPrintlnCentered("Alt Temp Ramp", 5);
-      break;
+  case 13:
+    // oled.println("BatteryVolts");
+    OLEDPrintlnCentered("BatteryVolts", 5);
+    break;
 
-    case 31:
-      //oled.println("UnSup Chrg St ");
-      OLEDPrintlnCentered("UnSup Chrg St ", 5);
-      break;
+  case 14:
+    // oled.println("Bat Low Volts");
+    OLEDPrintlnCentered("Bat Low Volts", 5);
+    break;
 
-    case 32:
-      //oled.println("UnSup Chrg St1");
-      OLEDPrintlnCentered("UnSup Chrg St1", 5);
-      break;
-    
-    case 33:
-      //oled.println("UnSup CPIndex ");
-      OLEDPrintlnCentered("UnSup CPIndex ", 5);
-      break;
-    
-    case 34:
-      //oled.println("UnSup CPIndex1");
-      OLEDPrintlnCentered("UnSup CPIndex1", 5);
-      break;
-    
-    case 35:
-      //oled.println("UnSup CPI St  ");
-      OLEDPrintlnCentered("UnSup CPI St  ", 5);
-      break;
-    
-    case 36:
-      //oled.println("UnSup CPI St1 ");
-      OLEDPrintlnCentered("UnSup CPI St1 ", 5);
-      break;
-  
-    case 41:
-      //oled.println("   FET Temp   ");
-      OLEDPrintlnCentered("   FET Temp   ", 5);
-      break;
-    
-    case 42:
-      //oled.println("Missing Sensor");
-      OLEDPrintlnCentered("Missing Sensor", 5);
-      break;
-    
-    case 72:
-      //oled.println("ADC Read Error");
-      OLEDPrintlnCentered("ADC Read Error", 5);
-      break;
-    
-    case 100:
-      //oled.println(" I2C 1 Error  ");
-      OLEDPrintlnCentered(" I2C 1 Error  ", 5);
-      break;
-    //
-    case 200:
-      //oled.println(" I2C 2 Error  ");
-      OLEDPrintlnCentered(" I2C 2 Error  ", 5);
-      break;
+  case 21:
+    // oled.println("  Alt Temp   ");
+    OLEDPrintlnCentered("  Alt Temp   ", 5);
+    break;
 
-    default:
-      //oled.println("Unknown Error ");
-      OLEDPrintlnCentered("Unknown Error ", 5);
-      break;
+  case 22:
+    // oled.println("  Alt RPMs   ");
+    OLEDPrintlnCentered("  Alt RPMs   ", 5);
+    break;
+
+  case 24:
+    // oled.println("Alt Temp Ramp");
+    OLEDPrintlnCentered("Alt Temp Ramp", 5);
+    break;
+
+  case 31:
+    // oled.println("UnSup Chrg St ");
+    OLEDPrintlnCentered("UnSup Chrg St ", 5);
+    break;
+
+  case 32:
+    // oled.println("UnSup Chrg St1");
+    OLEDPrintlnCentered("UnSup Chrg St1", 5);
+    break;
+
+  case 33:
+    // oled.println("UnSup CPIndex ");
+    OLEDPrintlnCentered("UnSup CPIndex ", 5);
+    break;
+
+  case 34:
+    // oled.println("UnSup CPIndex1");
+    OLEDPrintlnCentered("UnSup CPIndex1", 5);
+    break;
+
+  case 35:
+    // oled.println("UnSup CPI St  ");
+    OLEDPrintlnCentered("UnSup CPI St  ", 5);
+    break;
+
+  case 36:
+    // oled.println("UnSup CPI St1 ");
+    OLEDPrintlnCentered("UnSup CPI St1 ", 5);
+    break;
+
+  case 41:
+    // oled.println("   FET Temp   ");
+    OLEDPrintlnCentered("   FET Temp   ", 5);
+    break;
+
+  case 42:
+    // oled.println("Missing Sensor");
+    OLEDPrintlnCentered("Missing Sensor", 5);
+    break;
+
+  case 72:
+    // oled.println("ADC Read Error");
+    OLEDPrintlnCentered("ADC Read Error", 5);
+    break;
+
+  case 100:
+    // oled.println(" I2C 1 Error  ");
+    OLEDPrintlnCentered(" I2C 1 Error  ", 5);
+    break;
+  //
+  case 200:
+    // oled.println(" I2C 2 Error  ");
+    OLEDPrintlnCentered(" I2C 2 Error  ", 5);
+    break;
+
+  default:
+    // oled.println("Unknown Error ");
+    OLEDPrintlnCentered("Unknown Error ", 5);
+    break;
   }
-
 }
 
 void WriteOLEDDataScreenStaticData(void)
@@ -714,41 +710,49 @@ void WriteOLEDDataScreenStaticData(void)
 
   oled.setCursor(0, 5);
   oled.println("FIELD PWM: ");
-} //void WriteOLEDDataScreenStaticData(void) {
+} // void WriteOLEDDataScreenStaticData(void) {
 
 void WriteOLEDDynamicData(void)
-{  //********************************************************************************
+{ //********************************************************************************
   //   OUTPUT LCD DYNAMIC DATA
   //********************************************************************************
   extern const char *chargingStateString;
   extern int inChargingStateCount;
- 
-  #ifdef ENABLE_FEATURE_IN_SCUBA
-    extern const char *scubaModeString;
-    static String lcdLastScubaModeString;
-    char buffer[40];
-  #endif
 
-  LCDaltVolts.Update(measuredAltVolts); //Check for change and if change, save value into lastValue and print to OLED
+#ifdef ENABLE_FEATURE_IN_SCUBA
+  extern const char *scubaModeString;
+  static String lcdLastScubaModeString;
+  char buffer[40];
+#endif
+
+  LCDaltVolts.Update(measuredAltVolts); // Check for change and if change, save value into lastValue and print to OLED
   LCDbatVolts.Update(measuredBatVolts);
   LCDaltAmps.Update(measuredAltAmps);
   LCDbatAmps.Update(measuredBatAmps);
-  //LCDbatAmps.Update(measuredBatAmps);  // don't know why this was duplicated...
-  
-  
-  #ifdef OLED_DISPLAY_DEG_IN_F
-  LCDaltTemp.Update(measuredAltTemp * 9 / 5 + 32); // Temp is stored in deg C.  Convert to def F.
-  #ifndef NO_BAT_TEMP_SENSOR // then don't write anything to that field of LCD n(or Serial)
-  LCDbatTemp.Update(measuredBatTemp * 9 / 5 + 32);
-  #endif // NO_BAT_TEMP_SENSOR
-  #else
-  LCDaltTemp.Update(measuredAltTemp); // Display in degrees C
-  #ifndef NO_BAT_TEMP_SENSOR // then don't write anything to that field of LCD n(or Serial)
-  LCDbatTemp.Update(measuredBatTemp);
-  #endif // NO_BAT_TEMP_SENSOR
-  #endif // OLED_DISPLAY_DEG_IN_F
+  // LCDbatAmps.Update(measuredBatAmps);  // don't know why this was duplicated...
 
-  
+#ifdef OLED_DISPLAY_DEG_IN_F
+// 12/15/2024 - if we are displaying in degrees F, we want to capture the error temperature values and not convert them to F
+//   otherwise, we want to convert the stored values to F and display them.
+// -99 indicated not present.  -100 indicates user has shorted the Alt probe and we should run in half-power mode.
+  if ((measuredAltTemp = -99) || (measuredBatTemp = -100)) 
+  {
+    LCDaltTemp.Update(measuredAltTemp); // Display in degrees C
+  }
+  else
+  {
+    LCDaltTemp.Update(measuredAltTemp * 9 / 5 + 32); // Temp is stored in deg C.  Convert to def F.
+  }
+#ifndef NO_BAT_TEMP_SENSOR // then don't write anything to that field of LCD n(or Serial)
+  LCDbatTemp.Update(measuredBatTemp * 9 / 5 + 32);
+#endif // NO_BAT_TEMP_SENSOR
+#else
+  LCDaltTemp.Update(measuredAltTemp); // Display in degrees C
+#ifndef NO_BAT_TEMP_SENSOR // then don't write anything to that field of LCD n(or Serial)
+  LCDbatTemp.Update(measuredBatTemp);
+#endif                     // NO_BAT_TEMP_SENSOR
+#endif                     // OLED_DISPLAY_DEG_IN_F
+
   LCDPWM.Update((100 * fieldPWMvalue) / FIELD_PWM_MAX);
 
   // add countdown time field data
@@ -756,21 +760,20 @@ void WriteOLEDDynamicData(void)
   {
     LCDCount.Update(inChargingStateCount);
   }
-  else 
-  { 
-  // not Warmup or Ramping so make sure the CountDown is zero - sets up for trap in the LCDfield Update method
+  else
+  {
+    // not Warmup or Ramping so make sure the CountDown is zero - sets up for trap in the LCDfield Update method
     LCDCount.Update(0);
-    
+
     if ((chargingState == acceptance_charge) || (chargingState == bulk_charge))
     {
       // convert inChargingStateTime to HH:MM:SS format
-      unsigned long val = inChargingStateTime/1000UL;
+      unsigned long val = inChargingStateTime / 1000UL;
       int hours = numberOfHours(val);
       int minutes = numberOfMinutes(val);
       int seconds = numberOfSeconds(val);
-          
-      sprintf(buffer2, "%02d:%02d:%02d" , hours, minutes, seconds);
-      
+
+      sprintf(buffer2, "%02d:%02d:%02d", hours, minutes, seconds);
     }
     else // in other chargingStates, erase the LCDCount2 field
     {
@@ -778,20 +781,20 @@ void WriteOLEDDynamicData(void)
     }
     LCDCount2.Write(buffer2);
   }
-  LCDState.Update(chargingStateString);  // write the chargingStateString after the inChargingStateCount
-                                         //   so it overwrites the numbers if state changes during WarmUp or ramping
+  LCDState.Update(chargingStateString); // write the chargingStateString after the inChargingStateCount
+                                        //   so it overwrites the numbers if state changes during WarmUp or ramping
 
 #ifdef ENABLE_FEATURE_IN_SCUBA
   // add scuba mode label - write this on every pass since it can change at random times and can create times when it is not displayed
   LCDScuba.Update(scubaModeString);
-  //LCDScuba.Update(scubaModeString); does not work when charging state changes while scubaMode is true.  Direct print each pass is simple solution
-  #ifdef USE_SERIAL_DISPLAY
-    sprintf(buffer, "$D:%d,%s",
-            fnSB,
-            scubaModeString);
-    SERIAL_DISPLAY_PORT.println(buffer);
-  #endif //USE_SERIAL_DISPLAY
-#endif //ENABLE_FEATURE_IN_SCUBA
-} //WriteOLEDDynamicData
+// LCDScuba.Update(scubaModeString); does not work when charging state changes while scubaMode is true.  Direct print each pass is simple solution
+#ifdef USE_SERIAL_DISPLAY
+  sprintf(buffer, "$D:%d,%s",
+          fnSB,
+          scubaModeString);
+  SERIAL_DISPLAY_PORT.println(buffer);
+#endif // USE_SERIAL_DISPLAY
+#endif // ENABLE_FEATURE_IN_SCUBA
+} // WriteOLEDDynamicData
 
 #endif // USE_OLED

@@ -53,3 +53,9 @@ started with SmartRegulatorv1.3.1.2020_12StableE_for_10b
 18) Confirm that Lifeline profile agrees with Lifeline specs.
 
 
+12/15/2024
+- the lcd temperatures were displaying in degrees F but "C" was displayed.  I2C_OLED.h needed to include Config.h
+- in SmartRegulator.h line 170  #define FAULT_ALT_TEMP 1.15           //  Fault if Alt Temp exceeds desired set point by 10%  12/15/2024 - Changed to 1.15  15%
+- in SmartRegulator.h line 46   #define DATE_CODE  "12/15/24" // "11/06/21"
+- in SmartRegulator.h line 308  #define SENSOR_SAMPLE_RATE 100UL //50UL  12/15/24 changed from 50 to 100       // If we are not able to synchronize with the stator, force a sample of Volts, Amps, Temperatures, every 50mS min.
+- in SmartRegulator.h line 131  #define NTC_AVERAGING 30 //15 12/15/24 changed from 15 to 30  // There are up to 3 NTC sensors, and we will average 5 A/D samples each before converting to a temperature, to smooth things over. (Max 254) 
