@@ -22,7 +22,7 @@
 #include "Config.h"
 
 
-Adafruit_SSD1306 oled(OLED_PX_WIDTH, OLED_PX_HEIGHT, &Wire);
+SSD1306AsciiWire oled;
 
 extern const char *chargingStateString;
 extern int inChargingStateCount;
@@ -393,7 +393,7 @@ void WriteOLEDFeatureAssignments(void)
         }
     }
 #endif
-    oled.clearDisplay();
+    oled.clear();
     oled.setFont(Callibri15);
     oled.setCursor(0, 0);
     OLEDprintWrappedTextBreakAtSpace("FIn1: ", FeatureIn1String);
@@ -401,7 +401,7 @@ void WriteOLEDFeatureAssignments(void)
     OLEDprintWrappedTextBreakAtSpace("FIn3: ", FeatureIn3String);
     delay(TIME_BETWEEN_OLED_SCREENS);
 
-    oled.clearDisplay();
+    oled.clear();
     oled.setCursor(0, 0);
     OLEDprintWrappedTextBreakAtSpace("FOut1: ", FeatureOut1String);
     OLEDprintWrappedTextBreakAtSpace("FOut2: ", FeatureOut2String);
@@ -433,7 +433,7 @@ void WriteOLEDSerialPortAssignments(void)
 }
 #endif
 
-    oled.clearDisplay();
+    oled.clear();
     oled.setFont(Callibri15);
     //oled.setFont(TimesNewRoman16);
     oled.setCursor(0, 0);
