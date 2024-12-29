@@ -20,11 +20,11 @@
 #define _I2C_OLED_H_
 
 #define LCD_ADDRESS 0x03C          // I2C address of the Geekcreit SSD1306
-#include "SSD1306Ascii.h"
-#include "SSD1306AsciiWire.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #include "Config.h"
 
-extern SSD1306AsciiWire oled;
+extern Adafruit_SSD1306 oled;
 
 void OLEDPrintlnCentered(const char *text, uint8_t row = 0);
 void OLEDprintWrappedText(const String &text1, const String &text2);

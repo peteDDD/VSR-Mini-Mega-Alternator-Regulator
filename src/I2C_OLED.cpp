@@ -21,7 +21,8 @@
 #include "I2C_OLED.h"
 #include "Config.h"
 
-SSD1306AsciiWire oled;
+
+Adafruit_SSD1306 oled(OLED_PX_WIDTH, OLED_PX_HEIGHT, &Wire);
 
 extern const char *chargingStateString;
 extern int inChargingStateCount;
@@ -392,7 +393,7 @@ void WriteOLEDFeatureAssignments(void)
         }
     }
 #endif
-    oled.clear();
+    oled.clearDisplay();
     oled.setFont(Callibri15);
     oled.setCursor(0, 0);
     OLEDprintWrappedTextBreakAtSpace("FIn1: ", FeatureIn1String);
@@ -400,7 +401,7 @@ void WriteOLEDFeatureAssignments(void)
     OLEDprintWrappedTextBreakAtSpace("FIn3: ", FeatureIn3String);
     delay(TIME_BETWEEN_OLED_SCREENS);
 
-    oled.clear();
+    oled.clearDisplay();
     oled.setCursor(0, 0);
     OLEDprintWrappedTextBreakAtSpace("FOut1: ", FeatureOut1String);
     OLEDprintWrappedTextBreakAtSpace("FOut2: ", FeatureOut2String);
@@ -432,7 +433,7 @@ void WriteOLEDSerialPortAssignments(void)
 }
 #endif
 
-    oled.clear();
+    oled.clearDisplay();
     oled.setFont(Callibri15);
     //oled.setFont(TimesNewRoman16);
     oled.setCursor(0, 0);
